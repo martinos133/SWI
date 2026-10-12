@@ -271,6 +271,8 @@ model Appeal {
   application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   text          String
   status        AppealStatus @default(PODANE)
+  /// Úprava bodov komisiou (UC.08); pôvodný výpočet poradia zostáva nezmenený.
+  pointsAdjustment Float?
   decisionNote  String?
   decidedBy     String?
   decidedAt     DateTime?

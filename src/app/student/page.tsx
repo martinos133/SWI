@@ -179,7 +179,12 @@ export default async function StudentDashboard() {
           </section>
         ) : null}
 
-        {entry ? <Points entry={entry} /> : null}
+        {entry ? (
+          <Points
+            entry={entry}
+            adjustment={app.appeals.reduce((sum, a) => sum + (a.status === "UZNANE" ? (a.pointsAdjustment ?? 0) : 0), 0)}
+          />
+        ) : null}
 
         <section aria-labelledby="suhrn" className="mt-12 grid gap-8 sm:grid-cols-2">
           <div>
@@ -321,7 +326,13 @@ async function latestConfirmedEntry(applicationId: string) {
   };
 }
 
-function Points({ entry }: { entry: NonNullable<Awaited<ReturnType<typeof latestConfirmedEntry>>> }) {
+function Points({
+  entry,
+  adjustment,
+}: {
+  entry: NonNullable<Awaited<ReturnType<typeof latestConfirmedEntry>>>;
+  adjustment: number;
+}) {
   return (
     <section aria-labelledby="body" className="mt-12">
       <div className="flex items-baseline justify-between">
@@ -350,6 +361,17 @@ function Points({ entry }: { entry: NonNullable<Awaited<ReturnType<typeof latest
               </td>
             </tr>
           ))}
+          {adjustment ? (
+            <tr>
+              <td className="px-5 py-3" colSpan={2}>
+                Úprava po odvolaní
+              </td>
+              <td className="px-5 py-3 text-right font-semibold">
+                {adjustment > 0 ? "+" : ""}
+                {formatNumber(adjustment)}
+              </td>
+            </tr>
+          ) : null}
         </tbody>
         <tfoot className="border-t border-line-strong">
           <tr>
@@ -357,7 +379,7 @@ function Points({ entry }: { entry: NonNullable<Awaited<ReturnType<typeof latest
               Spolu
             </td>
             <td className="px-5 py-3 text-right text-lg font-extrabold">
-              {formatNumber(entry.points)}
+              {formatNumber(entry.points + adjustment)}
             </td>
           </tr>
         </tfoot>

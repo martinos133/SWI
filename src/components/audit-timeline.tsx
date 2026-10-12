@@ -30,8 +30,10 @@ export function describe(entry: Entry): string | null {
       return `stupeň ${d.from ?? "–"} na ${d.to ?? "–"}`;
     case "AIS_SYNCHRONIZACIA":
       return d.gpa != null ? `priemer ${d.gpa}, ${d.year}. ročník, ${d.distanceKm} km` : null;
-    case "BODY_ZMENENE":
-      return d.from != null ? `${d.from} na ${d.to} bodov` : null;
+    case "BODY_ZMENENE": {
+      const n = Number(d.adjustment);
+      return Number.isFinite(n) ? `úprava bodov o ${n > 0 ? "+" : ""}${String(n).replace(".", ",")}` : null;
+    }
     case "ODVOLANIE_ROZHODNUTE":
       return d.upheld ? "vyhovené" : "zamietnuté";
     default:

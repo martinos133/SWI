@@ -251,3 +251,57 @@ export async function uploadDocument(_: unknown, formData: FormData): Promise<Ac
   revalidatePath("/student", "layout");
   return { ok: true };
 }
+
+/** Odvolanie proti rozhodnutiu o pridelení s voliteľnou prílohou (S.15, UC.05). */
+export async function submitAppeal(_: unknown, formData: FormData): Promise<ActionResult> {
+  const text = String(formData.get("text") ?? "").trim();
+  const file = formData.get("file");
+  if (text.length < 20) {
+    return { ok: false, error: "Opíšte dôvod odvolania aspoň jednou-dvoma vetami." };
+  }
+  if (text.length > 3000) return { ok: false, error: "Odvolanie môže mať najviac 3000 znakov." };
+  const hasFile = file instanceof File && file.size > 0;
+  if (hasFile && file.size > MAX_SIZE) return { ok: false, error: "Príloha môže mať najviac 5 MB." };
+  if (hasFile && !ALLOWED.includes(file.type)) {
+    return { ok: false, error: "Prílohu nahrajte ako PDF, JPG alebo PNG." };
+  }
+
+  const { user, period, app } = await loadOwn();
+  if (!app) return { ok: false, error: "Žiadosť neexistuje." };
+  if (app.status !== "PRIDELENA" && app.status !== "NEPRIDELENA") {
+    return { ok: false, error: "Odvolať sa môžete až po rozhodnutí o pridelení." };
+  }
+  if (!windows(period).canAppeal) return { ok: false, error: "Lehota na odvolanie uplynula." };
+  if (app.appeals.some((a) => a.status === "PODANE")) {
+    return { ok: false, error: "Jedno odvolanie sa už posudzuje." };
+  }
+
+  const appeal = await db.appeal.create({ data: { applicationId: app.id, text } });
+  if (hasFile) {
+    const retainUntil = new Date(period.appealTo);
+    retainUntil.setMonth(retainUntil.getMonth() + 9);
+    await db.document.create({
+      data: {
+        applicationId: app.id,
+        appealId: appeal.id,
+        type: "ODVOLANIE",
+        fileName: file.name.slice(0, 200),
+        mimeType: file.type,
+        size: file.size,
+        storageKey: await storeEncrypted(Buffer.from(await file.arrayBuffer())),
+        retainUntil,
+      },
+    });
+  }
+  await audit({
+    actorId: user.id,
+    action: "ODVOLANIE_PODANE",
+    entityType: "Appeal",
+    entityId: appeal.id,
+    detail: { applicationId: app.id, attachment: hasFile },
+  });
+  await changeStatus(app.id, "ODVOLANIE", user.id);
+
+  revalidatePath("/student", "layout");
+  return { ok: true };
+}
