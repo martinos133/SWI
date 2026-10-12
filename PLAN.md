@@ -29,7 +29,7 @@ Won't (SW.01–SW.12) sa zámerne nerobí.
 - [x] **5. Správa** – termíny, kritériá a váhy, kapacity internátov
 - [x] **6. Vyhodnotenie** – výpočet poradia, návrh a potvrdenie pridelenia, náhradníci
 - [x] **7. Odvolania** – podanie s prílohou, rozhodnutie komisie
-- [ ] **8. Prierezové** – auditný záznam, e-maily, retencia dokladov
+- [x] **8. Prierezové** – auditný záznam, e-maily, retencia dokladov
 - [ ] **9. Kvalita** – testy, prístupnosť, mobil
 - [ ] **10. Nasadenie** – Vercel, screenshoty do kapitoly 6.2
 

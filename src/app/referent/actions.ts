@@ -138,3 +138,48 @@ export async function finishReview(applicationId: string): Promise<ActionResult>
   refresh(applicationId);
   return { ok: true };
 }
+
+/**
+ * Pridelenie uvoľneného miesta náhradníkovi počas roka (SW.08 – robí referent ručne
+ * podľa poradia náhradníkov). Kapacita sa overuje v transakcii (E.07).
+ */
+export async function assignFreePlace(applicationId: string, roomTypeId: string): Promise<ActionResult> {
+  const user = await requireUser(["REFERENT"]);
+  const app = await db.application.findUnique({
+    where: { id: applicationId },
+    include: { allocation: true },
+  });
+  if (!app || app.status !== "NEPRIDELENA" || app.allocation) {
+    return { ok: false, error: "Miesto sa dá prideliť iba náhradníkovi." };
+  }
+  try {
+    await db.$transaction(async (tx) => {
+      const room = await tx.roomType.findUniqueOrThrow({
+        where: { id: roomTypeId },
+        include: { _count: { select: { allocations: true } }, dorm: true },
+      });
+      if (room._count.allocations >= room.capacity) {
+        throw new CapacityError(`V internáte ${room.dorm.name} už nie je voľné miesto tohto typu.`);
+      }
+      await tx.allocation.create({ data: { applicationId, roomTypeId, confirmedBy: user.id } });
+      await audit(
+        {
+          actorId: user.id,
+          action: "PRIDELENIE_POTVRDENE",
+          entityType: "Application",
+          entityId: applicationId,
+          detail: { manual: true, dorm: room.dorm.name, room: room.label },
+        },
+        tx,
+      );
+    });
+  } catch (error) {
+    if (error instanceof CapacityError) return { ok: false, error: error.message };
+    throw error;
+  }
+  await changeStatus(applicationId, "PRIDELENA", user.id);
+  refresh(applicationId);
+  return { ok: true };
+}
+
+class CapacityError extends Error {}

@@ -255,3 +255,18 @@ export async function confirmRun(runId: string, actorId: string) {
   for (const id of outcome.waitlisted) await changeStatus(id, "NEPRIDELENA", actorId);
   return outcome;
 }
+
+/** Voľné typy izieb s popisom pre výber (odvolania, uvoľnené miesta). */
+export async function freeRoomOptions() {
+  const [rooms, dorms] = await Promise.all([
+    freeRooms(),
+    db.dorm.findMany({ include: { roomTypes: true } }),
+  ]);
+  return rooms
+    .filter((r) => r.free > 0)
+    .map((r) => {
+      const dorm = dorms.find((d) => d.id === r.dormId)!;
+      const type = dorm.roomTypes.find((t) => t.id === r.roomTypeId)!;
+      return { id: r.roomTypeId, label: `${dorm.name}, ${type.label.toLowerCase()}`, free: r.free };
+    });
+}

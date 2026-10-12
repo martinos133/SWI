@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState, PageHeader } from "@/components/ui/page-header";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { freeRooms } from "@/lib/evaluation";
+import { freeRoomOptions } from "@/lib/evaluation";
 import { formatDate, formatDateTime, formatNumber } from "@/lib/format";
 import { getActivePeriod } from "@/lib/period";
 import { APPEAL_STATUS } from "@/lib/status";
@@ -40,17 +40,7 @@ export default async function AppealsPage() {
   const pending = appeals.filter((a) => a.status === "PODANE");
   const decided = appeals.filter((a) => a.status !== "PODANE").reverse();
 
-  const [rooms, dorms] = await Promise.all([
-    freeRooms(),
-    db.dorm.findMany({ include: { roomTypes: true } }),
-  ]);
-  const roomOptions = rooms
-    .filter((r) => r.free > 0)
-    .map((r) => {
-      const dorm = dorms.find((d) => d.id === r.dormId)!;
-      const type = dorm.roomTypes.find((t) => t.id === r.roomTypeId)!;
-      return { id: r.roomTypeId, label: `${dorm.name}, ${type.label.toLowerCase()}`, free: r.free };
-    });
+  const roomOptions = await freeRoomOptions();
 
   return (
     <>

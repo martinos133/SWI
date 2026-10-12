@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/field";
 import type { ApplicationStatus, DocumentStatus, DocumentType } from "@/generated/prisma/enums";
 import { formatDateTime, formatFileSize } from "@/lib/format";
 import { DOCUMENT_STATUS } from "@/lib/status";
-import { finishReview, reviewDocument, startReview, type ActionResult } from "../../actions";
+import { assignFreePlace, finishReview, reviewDocument, startReview, type ActionResult } from "../../actions";
+import { Select } from "@/components/ui/field";
 
 type Doc = {
   id: string;
@@ -225,12 +226,52 @@ export function DocumentReview({
 export function ApplicationActions({
   applicationId,
   status,
+  freeRooms = [],
 }: {
   applicationId: string;
   status: ApplicationStatus;
+  freeRooms?: { id: string; label: string; free: number }[];
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [room, setRoom] = useState("");
+
+  if (status === "NEPRIDELENA") {
+    if (freeRooms.length === 0) return null;
+    return (
+      <div className="flex flex-col items-start gap-2 sm:items-end">
+        <div className="flex flex-wrap gap-2">
+          <label htmlFor="free-room" className="sr-only">
+            Uvoľnené miesto
+          </label>
+          <Select id="free-room" value={room} onChange={(e) => setRoom(e.target.value)} className="w-64">
+            <option value="">Vyberte uvoľnené miesto</option>
+            {freeRooms.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.label} (voľné {r.free})
+              </option>
+            ))}
+          </Select>
+          <Button
+            disabled={!room || pending}
+            onClick={() =>
+              startTransition(async () => {
+                const result = await assignFreePlace(applicationId, room);
+                setError(result.ok ? null : result.error);
+              })
+            }
+          >
+            Prideliť miesto
+          </Button>
+        </div>
+        {error ? (
+          <p role="alert" className="max-w-xs text-sm text-bad sm:text-right">
+            {error}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
 
   const run = (action: (id: string) => Promise<ActionResult>) =>
     startTransition(async () => {

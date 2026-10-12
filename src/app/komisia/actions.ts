@@ -169,7 +169,7 @@ export async function decideAppeal(input: z.input<typeof decisionSchema>): Promi
           action: "ODVOLANIE_ROZHODNUTE",
           entityType: "Appeal",
           entityId: appeal.id,
-          detail: { upheld, roomTypeId, pointsAdjustment, note },
+          detail: { applicationId: app.id, upheld, roomTypeId, pointsAdjustment, note },
         },
         tx,
       );

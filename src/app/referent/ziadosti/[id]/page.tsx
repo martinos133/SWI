@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { applicationInclude, documentChecklist } from "@/lib/applications";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { freeRoomOptions } from "@/lib/evaluation";
 import { formatDate, formatNumber } from "@/lib/format";
 import { DOCUMENT_TYPE, STATUS } from "@/lib/status";
 import { ApplicationActions, DocumentReview } from "./review";
@@ -36,6 +37,8 @@ export default async function ApplicationDetail({ params }: PageProps<"/referent
     take: 50,
   });
 
+  const freeRoomList = app.status === "NEPRIDELENA" ? await freeRoomOptions() : [];
+
   return (
     <>
       <Link
@@ -59,7 +62,7 @@ export default async function ApplicationDetail({ params }: PageProps<"/referent
             {app.submittedAt ? `, podaná ${formatDate(app.submittedAt)}` : ""}
           </p>
         </div>
-        <ApplicationActions applicationId={app.id} status={app.status} />
+        <ApplicationActions applicationId={app.id} status={app.status} freeRooms={freeRoomList} />
       </header>
 
       <div className="grid items-start gap-12 lg:grid-cols-[1fr_20rem]">

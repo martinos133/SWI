@@ -17,7 +17,7 @@ export function describe(entry: Entry): string | null {
     case "STAV_ZMENENY": {
       const from = STATUS[d.from as keyof typeof STATUS]?.label;
       const to = STATUS[d.to as keyof typeof STATUS]?.label;
-      return from && to ? `${from} na ${to.toLowerCase()}` : null;
+      return from && to ? `z „${from}“ na „${to}“` : null;
     }
     case "DOKLAD_NAHRANY":
     case "DOKLAD_SCHVALENY":
