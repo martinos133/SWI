@@ -86,7 +86,7 @@ export default async function StudentDashboard() {
           overline="Zatiaľ bez kľúča"
           title="Žiadosť ste ešte nepodali"
           figure="–"
-          className="mt-8 lg:mt-10"
+          className="order-first mt-6 lg:order-none lg:mt-10"
         />
       </div>
     );
@@ -233,7 +233,7 @@ export default async function StudentDashboard() {
         </section>
       </div>
 
-      <aside className="lg:pt-10">
+      <aside className="order-first pt-6 lg:order-none lg:pt-10">
         <div className="lg:sticky lg:top-28">
           <StatusTag app={app} rank={entry?.rank ?? null} />
         </div>

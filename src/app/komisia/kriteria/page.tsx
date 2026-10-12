@@ -4,11 +4,10 @@ import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import { getActivePeriod } from "@/lib/period";
+import { CRITERIA_ORDER } from "@/lib/ranking";
 import { CriteriaEditor } from "./criteria-editor";
 
 export const metadata: Metadata = { title: "Kritériá" };
-
-const ORDER = ["PROSPECH", "VZDIALENOST", "SOCIALNA", "ZDRAVOTNA"];
 
 export default async function CriteriaPage() {
   await requireUser(["KOMISIA"]);
@@ -16,7 +15,7 @@ export default async function CriteriaPage() {
   if (!period) return <EmptyState title="Nie je aktívne žiadne konanie" />;
 
   const criteria = (await db.criterion.findMany({ where: { periodId: period.id } })).sort(
-    (a, b) => ORDER.indexOf(a.key) - ORDER.indexOf(b.key),
+    (a, b) => CRITERIA_ORDER.indexOf(a.key) - CRITERIA_ORDER.indexOf(b.key),
   );
   const approver = period.criteriaApprovedBy
     ? await db.user.findUnique({ where: { id: period.criteriaApprovedBy }, select: { name: true } })

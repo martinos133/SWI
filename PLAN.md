@@ -27,7 +27,7 @@ Won't (SW.01–SW.12) sa zámerne nerobí.
 - [x] **3. Študent** – žiadosť s priebežným ukladaním, preferencie, doklady, prehľad
 - [x] **4. Referent** – zoznam žiadostí, posúdenie dokladov, výzva na doplnenie
 - [x] **5. Správa** – termíny, kritériá a váhy, kapacity internátov
-- [ ] **6. Vyhodnotenie** – výpočet poradia, návrh a potvrdenie pridelenia, náhradníci
+- [x] **6. Vyhodnotenie** – výpočet poradia, návrh a potvrdenie pridelenia, náhradníci
 - [ ] **7. Odvolania** – podanie s prílohou, rozhodnutie komisie
 - [ ] **8. Prierezové** – auditný záznam, e-maily, retencia dokladov
 - [ ] **9. Kvalita** – testy, prístupnosť, mobil

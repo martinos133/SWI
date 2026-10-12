@@ -6,6 +6,9 @@ import type { CriterionKey } from "@/generated/prisma/enums";
  * preto sa dá každý beh spätne zopakovať a doložiť (G.04).
  */
 
+/** Pevné poradie kritérií pri zobrazovaní a ukladaní snímok. */
+export const CRITERIA_ORDER: CriterionKey[] = ["PROSPECH", "VZDIALENOST", "SOCIALNA", "ZDRAVOTNA"];
+
 export type CriterionWeight = { key: CriterionKey; name: string; weight: number };
 
 export type Candidate = {

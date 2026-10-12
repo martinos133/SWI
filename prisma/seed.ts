@@ -146,8 +146,8 @@ async function main() {
       name: "Mladosť",
       address: "Staré Grunty 53, Bratislava",
       rooms: [
-        [2, 6],
-        [3, 6],
+        [2, 4],
+        [3, 3],
       ],
     },
     {
@@ -155,23 +155,23 @@ async function main() {
       name: "Družba",
       address: "Botanická 25, Bratislava",
       rooms: [
-        [1, 2],
-        [2, 6],
+        [1, 1],
+        [2, 2],
       ],
     },
     {
       code: "LS",
       name: "Ľudovít Štúr",
       address: "Mlynská dolina, Bratislava",
-      rooms: [[2, 4]],
+      rooms: [[2, 2]],
     },
     {
       code: "HP",
       name: "Horský park",
       address: "Jaskový rad 9, Bratislava",
       rooms: [
-        [1, 2],
-        [2, 4],
+        [1, 1],
+        [2, 1],
       ],
     },
   ];
