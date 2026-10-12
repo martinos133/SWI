@@ -5,6 +5,9 @@ import { SsoForm } from "./sso-form";
 
 export const metadata: Metadata = { title: "Univerzitné prihlásenie" };
 
+// Demo účty sa čítajú z databázy pri každej požiadavke, nie pri builde.
+export const dynamic = "force-dynamic";
+
 /**
  * Simulácia univerzitného poskytovateľa identity (API.02).
  * Zámerne vyzerá ako cudzí systém – v produkcii ho nahradí presmerovanie na SSO.

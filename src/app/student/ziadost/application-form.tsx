@@ -111,8 +111,8 @@ export function ApplicationForm(props: Props) {
   const available = dorms.filter((d) => !draft.preferences.includes(d.id));
 
   return (
-    <div className="grid items-start gap-10 lg:grid-cols-[1fr_19rem]">
-      <div className="flex flex-col gap-12">
+    <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_19rem]">
+      <div className="flex min-w-0 flex-col gap-12">
         <FormSection
           title="Údaje z akademického IS"
           description="Tieto údaje nemeníte. Ak nesedia, obráťte sa na študijné oddelenie fakulty."
@@ -372,7 +372,7 @@ function FormSection({
   children: ReactNode;
 }) {
   return (
-    <section className="grid gap-4 border-t border-line pt-6 first:border-0 first:pt-0">
+    <section className="grid grid-cols-1 gap-4 border-t border-line pt-6 first:border-0 first:pt-0">
       <div className="max-w-xl">
         <h2 className="text-lg font-bold">{title}</h2>
         {description ? <p className="mt-1 text-muted">{description}</p> : null}

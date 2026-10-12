@@ -42,11 +42,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       <section className="relative flex flex-col overflow-hidden bg-pine px-6 py-8 text-white sm:px-10 lg:px-14 lg:py-12">
         <Wordmark inverted />
 
-        <div className="mt-14 max-w-xl lg:mt-auto">
-          <h1 className="text-[2.5rem] leading-[1.02] font-extrabold tracking-[-0.035em] sm:text-display">
+        <div className="mt-10 max-w-xl lg:mt-auto">
+          <h1 className="text-[2.25rem] leading-[1.02] font-extrabold tracking-[-0.035em] sm:text-display">
             Miesto na internáte na akademický rok {period?.academicYear ?? ""}
           </h1>
-          <p className="mt-5 max-w-md text-lg leading-relaxed text-white/70">
+          <p className="mt-5 hidden max-w-md text-lg leading-relaxed text-white/70 sm:block">
             Žiadosť podáte online, stav a chýbajúce doklady vidíte priebežne.
             Poradie počíta systém podľa kritérií, ktoré schválila ubytovacia
             komisia.
@@ -54,7 +54,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         </div>
 
         {milestones.length > 0 ? (
-          <ol className="mt-12 grid gap-px overflow-hidden rounded-panel bg-white/10 sm:grid-cols-3 lg:mt-16">
+          <ol className="mt-12 hidden gap-px overflow-hidden rounded-panel bg-white/10 sm:grid sm:grid-cols-3 lg:mt-16">
             {milestones.map((m, i) => (
               <li key={m.label} className="bg-pine p-4 sm:p-5">
                 <p className="flex items-center gap-2 text-sm text-white/55">
@@ -105,6 +105,22 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <ButtonLink href="/sso" size="lg" className="mt-8 w-full">
             Prihlásiť sa univerzitným kontom
           </ButtonLink>
+
+          {milestones.length > 0 ? (
+            <ol className="mt-10 flex flex-col gap-3 border-t border-line pt-6 sm:hidden">
+              {milestones.map((m) => (
+                <li key={m.label} className="flex flex-col text-sm">
+                  <span className="font-semibold">
+                    {m.label}
+                    {m.current ? (
+                      <span className="ml-2 rounded-full bg-brass px-2 py-0.5 text-xs text-pine">prebieha</span>
+                    ) : null}
+                  </span>
+                  <span className="text-muted">{m.when}</span>
+                </li>
+              ))}
+            </ol>
+          ) : null}
 
           <p className="mt-6 text-sm text-muted">
             Systém nemá vlastné heslá. S prístupom vám pomôže IT oddelenie,
