@@ -23,7 +23,7 @@ Won't (SW.01–SW.12) sa zámerne nerobí.
 
 - [x] **0. Kostra** – Next.js, dizajn systém (tokeny, písmo, komponenty, kľúčenka)
 - [x] **1. Dáta** – Prisma schéma, seed, mock AIS, stavový automat
-- [ ] **2. Prihlásenie** – SSO + 2FA, session, roly, proxy, app shell
+- [x] **2. Prihlásenie** – SSO + 2FA, session, roly, proxy, app shell
 - [ ] **3. Študent** – žiadosť s priebežným ukladaním, preferencie, doklady, prehľad
 - [ ] **4. Referent** – zoznam žiadostí, posúdenie dokladov, výzva na doplnenie
 - [ ] **5. Správa** – termíny, kritériá a váhy, kapacity internátov

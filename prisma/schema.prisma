@@ -63,6 +63,8 @@ model User {
   role      Role
   /// Identifikátor v akademickom IS, len pre študentov.
   aisId     String?  @unique
+  /// Tajomstvo pre druhý faktor (TOTP, aplikácia Authenticator).
+  totpSecret String
   createdAt DateTime @default(now())
 
   sessions     Session[]
@@ -76,8 +78,6 @@ model Session {
   userId       String
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   verified     Boolean   @default(false)
-  otpHash      String?
-  otpExpiresAt DateTime?
   otpAttempts  Int       @default(0)
   expiresAt    DateTime
   createdAt    DateTime  @default(now())

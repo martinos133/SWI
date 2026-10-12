@@ -6,6 +6,7 @@ import type {
   DocumentStatus,
   DocumentType,
 } from "../src/generated/prisma/enums";
+import { generateSecret } from "otplib";
 import { aisRecordFor } from "../src/lib/ais";
 import { createPrismaClient } from "../src/lib/prisma";
 import { storeEncrypted } from "../src/lib/storage";
@@ -116,6 +117,7 @@ async function main() {
       email: "jana.kovacova@uniba.example",
       name: "Jana Kováčová",
       role: "REFERENT",
+      totpSecret: generateSecret(),
     },
   });
   const komisia = await db.user.create({
@@ -124,6 +126,7 @@ async function main() {
       email: "peter.horvath@uniba.example",
       name: "prof. Peter Horváth",
       role: "KOMISIA",
+      totpSecret: generateSecret(),
     },
   });
   await db.user.create({
@@ -132,6 +135,7 @@ async function main() {
       email: "milan.balaz@uniba.example",
       name: "Milan Baláž",
       role: "SPRAVCA",
+      totpSecret: generateSecret(),
     },
   });
 
@@ -279,6 +283,7 @@ async function main() {
         name: `${first} ${last}`,
         role: "STUDENT",
         aisId,
+        totpSecret: generateSecret(),
       },
     });
 
