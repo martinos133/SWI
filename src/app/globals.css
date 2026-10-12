@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+/*
+ * Dizajnové tokeny – "Internát"
+ * Borovica (tmavá zelená) nesie text a hlavné akcie, mosadz je jediný akcent
+ * a patrí kľúčom – kľúčenke a fokusu. Pozadie je studená omietka, nie papier.
+ */
+@theme {
+  --color-paper: #f1f3f1;
+  --color-surface: #ffffff;
+  --color-sunken: #e8ece9;
+
+  --color-ink: #0f2e2a;
+  --color-ink-soft: #33504b;
+  --color-muted: #63736e;
+  --color-line: #d7ddd9;
+  --color-line-strong: #b6c2bd;
+
+  --color-pine: #0f2e2a;
+  --color-pine-hover: #1a4740;
+  --color-pine-tint: #e3ece9;
+
+  --color-brass: #c9a24b;
+  --color-brass-deep: #8c6b1f;
+  --color-brass-tint: #f5ecd6;
+
+  --color-ok: #2b7a4b;
+  --color-ok-tint: #e2f0e7;
+  --color-wait: #9a6300;
+  --color-wait-tint: #fbeed3;
+  --color-bad: #b02a43;
+  --color-bad-tint: #f8e2e6;
+  --color-info: #2a55c4;
+  --color-info-tint: #e4ebfa;
+
+  --font-sans: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+
+  --text-display: 3.25rem;
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.035em;
+
+  --radius-field: 0.5rem;
+  --radius-panel: 0.875rem;
+  --radius-tag: 1.5rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brass);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-brass-tint);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Jediná orchestrovaná animácia: kľúčenka sa pri načítaní zhupne na háčiku. */
+@keyframes swing {
+  0% {
+    transform: rotate(-9deg);
+  }
+  45% {
+    transform: rotate(4deg);
+  }
+  75% {
+    transform: rotate(-1.5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-swing {
+  transform-origin: 50% 0.75rem;
+  animation: swing 1.1s cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
