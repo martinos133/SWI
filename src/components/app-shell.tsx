@@ -28,20 +28,23 @@ export function AppShell({ user, children }: { user: CurrentUser; children: Reac
             <Wordmark />
           </Link>
 
-          <div className="order-last -mx-4 w-[calc(100%+2rem)] border-t border-line px-1 sm:mx-0 sm:w-auto sm:border-0 sm:px-0 md:order-none md:flex-1">
+          <div className="order-last -mx-4 w-[calc(100%+2rem)] border-t border-line px-3 sm:-mx-6 sm:w-[calc(100%+3rem)] sm:px-5 lg:order-none lg:mx-0 lg:w-auto lg:flex-1 lg:border-0 lg:px-0">
             <NavLinks items={NAV[user.role]} />
           </div>
 
           <div className="ml-auto flex items-center gap-3 py-2.5">
-            <div className="hidden text-right leading-tight sm:block">
+            <div className="hidden text-right leading-tight xl:block">
               <p className="text-sm font-semibold">{user.name}</p>
               <p className="text-xs text-muted">{ROLE_LABEL[user.role]}</p>
             </div>
             <span
-              aria-hidden
+              title={`${user.name}, ${ROLE_LABEL[user.role]}`}
               className="grid size-9 place-items-center rounded-full bg-pine-tint text-sm font-bold text-pine"
             >
-              {initials}
+              <span aria-hidden>{initials}</span>
+              <span className="sr-only xl:hidden">
+                {user.name}, {ROLE_LABEL[user.role]}
+              </span>
             </span>
             <form action={signOut}>
               <button
