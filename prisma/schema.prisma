@@ -1,0 +1,305 @@
+// Dátový model – Žiadosť o ubytovanie B (kapitola 5 DNR)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  STUDENT
+  REFERENT
+  KOMISIA
+  SPRAVCA
+}
+
+enum ApplicationStatus {
+  ROZPRACOVANA
+  PODANA
+  OVERUJE_SA
+  CAKA_NA_DOPLNENIE
+  VYHODNOCUJE_SA
+  PRIDELENA
+  NEPRIDELENA
+  ODVOLANIE
+  ZRUSENA
+}
+
+enum DocumentType {
+  PRIJEM
+  ZDRAVOTNY
+  ODVOLANIE
+}
+
+enum DocumentStatus {
+  NAHRANY
+  OVERENY
+  ZAMIETNUTY
+  DOPLNIT
+}
+
+enum AppealStatus {
+  PODANE
+  UZNANE
+  ZAMIETNUTE
+}
+
+enum CriterionKey {
+  PROSPECH
+  VZDIALENOST
+  SOCIALNA
+  ZDRAVOTNA
+}
+
+/// Používateľ prihlásený univerzitným kontom (systém nevedie heslá – E.01).
+model User {
+  id        String   @id @default(cuid())
+  login     String   @unique
+  email     String   @unique
+  name      String
+  role      Role
+  /// Identifikátor v akademickom IS, len pre študentov.
+  aisId     String?  @unique
+  createdAt DateTime @default(now())
+
+  sessions     Session[]
+  applications Application[]
+  audit        AuditLog[]
+}
+
+/// Session po SSO; `verified` sa nastaví až po druhom faktore (S.07).
+model Session {
+  id           String    @id
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified     Boolean   @default(false)
+  otpHash      String?
+  otpExpiresAt DateTime?
+  otpAttempts  Int       @default(0)
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// Konanie pre jeden akademický rok s termínmi (S.11).
+model Period {
+  id                  String    @id @default(cuid())
+  academicYear        String    @unique
+  submitFrom          DateTime
+  submitTo            DateTime
+  editTo              DateTime
+  appealTo            DateTime
+  isActive            Boolean   @default(false)
+  /// Kritériá schválené komisiou pred otvorením podávania (E.03).
+  criteriaApprovedAt  DateTime?
+  criteriaApprovedBy  String?
+  createdAt           DateTime  @default(now())
+
+  criteria     Criterion[]
+  applications Application[]
+  rankingRuns  RankingRun[]
+}
+
+model Criterion {
+  id          String       @id @default(cuid())
+  periodId    String
+  period      Period       @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  key         CriterionKey
+  name        String
+  description String
+  /// Váha v bodoch; súčet váh konania je 100.
+  weight      Int
+
+  @@unique([periodId, key])
+}
+
+model Dorm {
+  id      String @id @default(cuid())
+  code    String @unique
+  name    String
+  address String
+
+  roomTypes   RoomType[]
+  preferences Preference[]
+}
+
+/// Typ izby v internáte a počet miest, ktoré sa dajú prideliť (S.16).
+model RoomType {
+  id       String @id @default(cuid())
+  dormId   String
+  dorm     Dorm   @relation(fields: [dormId], references: [id], onDelete: Cascade)
+  beds     Int
+  label    String
+  capacity Int
+
+  allocations Allocation[]
+
+  @@unique([dormId, beds])
+}
+
+model Application {
+  id        String            @id @default(cuid())
+  studentId String
+  student   User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  periodId  String
+  period    Period            @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  status    ApplicationStatus @default(ROZPRACOVANA)
+
+  // Údaje prevzaté z AIS (S.02) – študent ich neprepisuje.
+  aisYear       Int?
+  aisProgram    String?
+  aisFaculty    String?
+  aisGpa        Float?
+  aisDistanceKm Int?
+  aisSyncedAt   DateTime?
+
+  phone         String?
+  preferredBeds Int?
+  claimsSocial  Boolean @default(false)
+  claimsHealth  Boolean @default(false)
+  note          String?
+  /// Posúdenie sociálnej situácie referentom (0–3) na základe príjmového dokladu.
+  socialLevel   Int?
+
+  submittedAt DateTime?
+  cancelledAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  preferences    Preference[]
+  documents      Document[]
+  appeals        Appeal[]
+  allocation     Allocation?
+  rankingEntries RankingEntry[]
+
+  /// Jedna žiadosť na študenta a konanie (E.08).
+  @@unique([studentId, periodId])
+  @@index([periodId, status])
+}
+
+/// Preferenčný zoznam internátov (S.14).
+model Preference {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  dormId        String
+  dorm          Dorm        @relation(fields: [dormId], references: [id], onDelete: Cascade)
+  rank          Int
+
+  @@unique([applicationId, dormId])
+  @@unique([applicationId, rank])
+}
+
+/// Príloha žiadosti, súbor je uložený šifrovaný (S.03, S.12).
+model Document {
+  id            String         @id @default(cuid())
+  applicationId String
+  application   Application    @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  appealId      String?
+  appeal        Appeal?        @relation(fields: [appealId], references: [id], onDelete: SetNull)
+  type          DocumentType
+  status        DocumentStatus @default(NAHRANY)
+  fileName      String
+  mimeType      String
+  size          Int
+  storageKey    String
+  reviewNote    String?
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  /// Po tomto dátume sa súbor zmaže (E.04, S.12).
+  retainUntil   DateTime
+  purgedAt      DateTime?
+  uploadedAt    DateTime       @default(now())
+
+  @@index([applicationId, type])
+}
+
+/// Jeden beh výpočtu poradia so snímkou kritérií, aby sa dal zopakovať (S.05, G.04).
+model RankingRun {
+  id               String    @id @default(cuid())
+  periodId         String
+  period           Period    @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  createdBy        String
+  createdAt        DateTime  @default(now())
+  /// JSON: [{ key, name, weight }]
+  criteriaSnapshot String
+  confirmedAt      DateTime?
+  confirmedBy      String?
+
+  entries     RankingEntry[]
+  allocations Allocation[]
+}
+
+model RankingEntry {
+  id                 String      @id @default(cuid())
+  runId              String
+  run                RankingRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  applicationId      String
+  application        Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  rank               Int
+  points             Float
+  /// JSON: { [CriterionKey]: { input, normalized, points } }
+  breakdown          String
+  proposedRoomTypeId String?
+
+  @@unique([runId, applicationId])
+  @@index([runId, rank])
+}
+
+/// Potvrdené pridelenie miesta (SW.03 – potvrdzuje referent).
+model Allocation {
+  id            String      @id @default(cuid())
+  applicationId String      @unique
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  roomTypeId    String
+  roomType      RoomType    @relation(fields: [roomTypeId], references: [id])
+  runId         String?
+  run           RankingRun? @relation(fields: [runId], references: [id], onDelete: SetNull)
+  confirmedBy   String
+  confirmedAt   DateTime    @default(now())
+
+  @@index([roomTypeId])
+}
+
+model Appeal {
+  id            String       @id @default(cuid())
+  applicationId String
+  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  text          String
+  status        AppealStatus @default(PODANE)
+  decisionNote  String?
+  decidedBy     String?
+  decidedAt     DateTime?
+  createdAt     DateTime     @default(now())
+
+  documents Document[]
+}
+
+/// Auditný záznam zmien bodov, dokladov a rozhodnutí (S.13).
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String
+  /// JSON s detailmi (pred/po)
+  detail     String   @default("{}")
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  body      String
+  status    String
+  createdAt DateTime @default(now())
+}
