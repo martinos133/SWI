@@ -86,7 +86,7 @@ export default async function ApplicationsPage({ searchParams }: PageProps<"/ref
                 )}
               >
                 {f.label}
-                <span className={clsx("tabular-nums", active ? "text-white/70" : "text-muted")}>
+                <span className={clsx("", active ? "text-white/70" : "text-muted")}>
                   {countFor(f.statuses)}
                 </span>
               </Link>

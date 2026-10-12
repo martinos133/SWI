@@ -189,7 +189,7 @@ export function DocumentReview({
                       ? "Napríklad: Na potvrdení chýba pečiatka zamestnávateľa."
                       : "Napríklad: Doklad nepatrí študentovi ani členovi jeho domácnosti."
                   }
-                  className="min-h-20"
+                  rows={3}
                 />
                 <p className="text-sm text-muted">Študentovi to pošleme e-mailom a uvidí to aj v aplikácii.</p>
               </div>

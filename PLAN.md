@@ -26,7 +26,7 @@ Won't (SW.01–SW.12) sa zámerne nerobí.
 - [x] **2. Prihlásenie** – SSO + 2FA, session, roly, proxy, app shell
 - [x] **3. Študent** – žiadosť s priebežným ukladaním, preferencie, doklady, prehľad
 - [x] **4. Referent** – zoznam žiadostí, posúdenie dokladov, výzva na doplnenie
-- [ ] **5. Správa** – termíny, kritériá a váhy, kapacity internátov
+- [x] **5. Správa** – termíny, kritériá a váhy, kapacity internátov
 - [ ] **6. Vyhodnotenie** – výpočet poradia, návrh a potvrdenie pridelenia, náhradníci
 - [ ] **7. Odvolania** – podanie s prílohou, rozhodnutie komisie
 - [ ] **8. Prierezové** – auditný záznam, e-maily, retencia dokladov

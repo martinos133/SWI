@@ -1,5 +1,5 @@
 import Link from "next/link";
-import clsx from "clsx";
+import { cn } from "@/lib/cn";
 import type { ComponentProps } from "react";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
@@ -28,7 +28,7 @@ export function buttonClass({
   variant = "primary",
   size = "md",
 }: StyleProps = {}) {
-  return clsx(base, variants[variant], sizes[size]);
+  return cn(base, variants[variant], sizes[size]);
 }
 
 export function Button({
@@ -39,7 +39,7 @@ export function Button({
 }: ComponentProps<"button"> & StyleProps) {
   return (
     <button
-      className={clsx(buttonClass({ variant, size }), className)}
+      className={cn(buttonClass({ variant, size }), className)}
       {...props}
     />
   );
@@ -53,7 +53,7 @@ export function ButtonLink({
 }: ComponentProps<typeof Link> & StyleProps) {
   return (
     <Link
-      className={clsx(buttonClass({ variant, size }), className)}
+      className={cn(buttonClass({ variant, size }), className)}
       {...props}
     />
   );

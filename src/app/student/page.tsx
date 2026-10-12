@@ -69,7 +69,7 @@ export default async function StudentDashboard() {
               ],
             ].map(([title, text], i) => (
               <li key={title} className="relative">
-                <span className="absolute top-0.5 -left-[2.0625rem] grid size-5 place-items-center rounded-full bg-paper text-xs font-bold text-muted ring-1 ring-line-strong tabular-nums">
+                <span className="absolute top-0.5 -left-[2.0625rem] grid size-5 place-items-center rounded-full bg-paper text-xs font-bold text-muted ring-1 ring-line-strong">
                   {i + 1}
                 </span>
                 <p className="font-semibold">{title}</p>
@@ -150,7 +150,7 @@ export default async function StudentDashboard() {
                   >
                     <span
                       className={clsx(
-                        "grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold tabular-nums",
+                        "grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold",
                         state === "done" && "bg-pine-tint text-pine",
                         state === "current" && "bg-brass text-pine",
                         state === "next" && "text-muted ring-1 ring-line-strong",
@@ -344,8 +344,8 @@ function Points({ entry }: { entry: NonNullable<Awaited<ReturnType<typeof latest
           {entry.criteria.map((c) => (
             <tr key={c.key}>
               <td className="px-5 py-3">{c.name}</td>
-              <td className="px-5 py-3 text-right text-muted tabular-nums">{c.weight}</td>
-              <td className="px-5 py-3 text-right font-semibold tabular-nums">
+              <td className="px-5 py-3 text-right text-muted">{c.weight}</td>
+              <td className="px-5 py-3 text-right font-semibold">
                 {formatNumber(entry.breakdown[c.key]?.points ?? 0)}
               </td>
             </tr>
@@ -356,7 +356,7 @@ function Points({ entry }: { entry: NonNullable<Awaited<ReturnType<typeof latest
             <td className="px-5 py-3 font-bold" colSpan={2}>
               Spolu
             </td>
-            <td className="px-5 py-3 text-right text-lg font-extrabold tabular-nums">
+            <td className="px-5 py-3 text-right text-lg font-extrabold">
               {formatNumber(entry.points)}
             </td>
           </tr>

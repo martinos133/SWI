@@ -90,7 +90,7 @@ export function KeyTag({
         {figure ? (
           <p
             className={clsx(
-              "relative mt-4 text-[3.5rem] leading-none font-extrabold tracking-[-0.04em] tabular-nums",
+              "relative mt-4 text-[3.5rem] leading-none font-extrabold tracking-[-0.04em]",
               blank ? "text-line-strong" : "text-pine [text-shadow:0_1px_0_rgba(255,255,255,0.35)]",
             )}
           >

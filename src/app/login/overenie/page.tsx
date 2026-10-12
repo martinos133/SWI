@@ -44,7 +44,7 @@ export default async function SecondFactorPage() {
             <p className="mt-0.5 text-sm text-muted">
               Takto by kód ukázala aplikácia v mobile. Platí približne 30 sekúnd.
             </p>
-            <p className="mt-3 text-2xl font-bold tracking-[0.2em] tabular-nums">
+            <p className="mt-3 text-2xl font-bold tracking-[0.2em]">
               {demoCode.slice(0, 3)} {demoCode.slice(3)}
             </p>
           </aside>

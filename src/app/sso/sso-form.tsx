@@ -57,7 +57,7 @@ export function SsoForm({ demo }: { demo: DemoAccount[] }) {
                       {account.note ?? ROLE_LABEL[account.role]}
                     </span>
                   </span>
-                  <span className="text-sm text-muted tabular-nums">{account.login}</span>
+                  <span className="text-sm text-muted">{account.login}</span>
                 </button>
               </li>
             ))}

@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { cn } from "@/lib/cn";
 import type { ComponentProps, ReactNode } from "react";
 
 const control =
@@ -20,7 +20,7 @@ export function Field({
   className?: string;
 }) {
   return (
-    <div className={clsx("flex flex-col gap-1.5", className)}>
+    <div className={cn("flex flex-col gap-1.5", className)}>
       <label htmlFor={htmlFor} className="text-sm font-semibold text-ink">
         {label}
       </label>
@@ -39,13 +39,14 @@ export function Field({
 }
 
 export function Input({ className, ...props }: ComponentProps<"input">) {
-  return <input className={clsx(control, "h-10", className)} {...props} />;
+  return <input className={cn(control, "h-10", className)} {...props} />;
 }
 
-export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
+export function Textarea({ className, rows = 4, ...props }: ComponentProps<"textarea">) {
   return (
     <textarea
-      className={clsx(control, "min-h-28 py-2.5 leading-relaxed", className)}
+      rows={rows}
+      className={cn(control, "py-2.5 leading-relaxed", className)}
       {...props}
     />
   );
@@ -54,7 +55,7 @@ export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
 export function Select({ className, ...props }: ComponentProps<"select">) {
   return (
     <select
-      className={clsx(control, "h-10 appearance-none pr-9", className)}
+      className={cn(control, "h-10 appearance-none pr-9", className)}
       style={{
         backgroundImage:
           "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath stroke='%2363736e' stroke-width='1.6' d='m1 1.5 5 5 5-5'/%3E%3C/svg%3E\")",

@@ -169,7 +169,7 @@ export function ApplicationForm(props: Props) {
             <ol className="divide-y divide-line rounded-panel bg-surface ring-1 ring-line">
               {chosen.map((dorm, i) => (
                 <li key={dorm.id} className="flex items-center gap-4 px-4 py-3">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-pine text-sm font-bold text-white tabular-nums">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-pine text-sm font-bold text-white">
                     {i + 1}
                   </span>
                   <div className="min-w-0 flex-1">

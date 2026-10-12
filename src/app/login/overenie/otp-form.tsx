@@ -27,7 +27,7 @@ export function OtpForm() {
         required
         aria-invalid={Boolean(state?.error)}
         aria-describedby={state?.error ? "code-error" : undefined}
-        className="-mt-2 h-16 w-full rounded-field bg-surface text-center text-3xl font-bold tracking-[0.35em] tabular-nums ring-1 ring-inset ring-line-strong placeholder:text-line-strong focus:outline-none focus:ring-2 focus:ring-pine aria-[invalid=true]:ring-bad"
+        className="-mt-2 h-16 w-full rounded-field bg-surface text-center text-3xl font-bold tracking-[0.35em] ring-1 ring-inset ring-line-strong placeholder:text-line-strong focus:outline-none focus:ring-2 focus:ring-pine aria-[invalid=true]:ring-bad"
       />
       {state?.error ? (
         <p id="code-error" role="alert" className="-mt-1 text-sm text-bad">

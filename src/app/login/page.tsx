@@ -57,7 +57,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <ol className="mt-12 grid gap-px overflow-hidden rounded-panel bg-white/10 sm:grid-cols-3 lg:mt-16">
             {milestones.map((m, i) => (
               <li key={m.label} className="bg-pine p-4 sm:p-5">
-                <p className="flex items-center gap-2 text-sm text-white/55 tabular-nums">
+                <p className="flex items-center gap-2 text-sm text-white/55">
                   {i + 1}
                   {m.current ? (
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-brass px-2 py-0.5 text-xs font-semibold text-pine">
