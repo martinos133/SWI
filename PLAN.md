@@ -14,8 +14,8 @@ Won't (SW.01–SW.12) sa zámerne nerobí.
 | Prihlásenie | Simulované univerzitné SSO + 2FA kód | Reálne SSO nie je k dispozícii, rozhranie API.02 je izolované |
 | AIS | Mock modul `src/lib/ais.ts` | Rozhranie API.01, dá sa vymeniť za reálne napojenie |
 | E-mail | Nodemailer (SMTP / výpis do konzoly) | Rozhranie API.03, každý e-mail sa loguje |
-| Doklady | Šifrované AES-256-GCM na disku | S.12, GDPR (E.04) |
-| Testy | Vitest | Výpočet poradia a stavový automat |
+| Doklady | Šifrované AES-256-GCM v databáze | S.12, GDPR (E.04), funguje aj bez disku |
+| Testy | Vitest, Playwright, axe-core | Výpočet poradia, stavy, celé toky rolí, WCAG 2.2 AA |
 | Hosting | Vercel + Turso | Bezplatný tier, nasadenie z GitHubu |
 | Repozitár / IDE | GitHub, VS Code | |
 
@@ -31,7 +31,7 @@ Won't (SW.01–SW.12) sa zámerne nerobí.
 - [x] **7. Odvolania** – podanie s prílohou, rozhodnutie komisie
 - [x] **8. Prierezové** – auditný záznam, e-maily, retencia dokladov
 - [x] **9. Kvalita** – testy, prístupnosť, mobil
-- [ ] **10. Nasadenie** – Vercel, screenshoty do kapitoly 6.2
+- [x] **10. Nasadenie** – príprava pre Vercel + Turso (DEPLOY.md), screenshoty a kapitoly 5 a 6 DNR
 
 ## Stavový automat žiadosti (E.09)
 

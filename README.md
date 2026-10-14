@@ -39,6 +39,9 @@ Prihlásiť sa dá aj ľubovoľným študentom zo seedu, ak do poľa zadáš jeh
 | `npm run dev` | vývojový server |
 | `npm run build` | produkčný build |
 | `npm test` | unit testy (výpočet poradia, stavový automat, dátumy) |
+| `npm run test:e2e` | E2E testy v Playwright (Google Chrome) vrátane kontroly prístupnosti a mobilu |
+| `npm run screenshots` | screenshoty celého konania do `docs/screenshots` |
+| `npm run db:deploy` | migrácie na vzdialenú libSQL/Turso databázu |
 | `npm run db:seed` | znova naplní databázu ukážkovými dátami |
 | `npm run retencia` | zmaže doklady po uplynutí doby uchovávania |
 
@@ -59,13 +62,12 @@ src/lib/
   evaluation.ts      beh výpočtu, overenie zopakovateľnosti, potvrdenie s kontrolou kapacity
   status.ts          stavový automat žiadosti
   applications.ts    zmena stavu s auditom a e-mailom
-  storage.ts         šifrované úložisko dokladov (AES-256-GCM)
+  storage.ts         šifrované doklady v databáze (AES-256-GCM)
   ais.ts             simulácia akademického IS
 ```
 
-## Nasadenie
+## Dokumentácia
 
-Na Verceli s databázou Turso (libSQL): nastav `DATABASE_URL=libsql://…`,
-`DATABASE_AUTH_TOKEN`, `APP_SECRET` a `CRON_SECRET`. Denný cron na mazanie dokladov je
-v `vercel.json`. Doklady sú lokálne na disku – pre Vercel ich treba presunúť do objektového
-úložiska (napr. Vercel Blob), rozhranie je v `src/lib/storage.ts`.
+- [docs/DNR-kapitoly-5-6.md](docs/DNR-kapitoly-5-6.md) – dátový model a prototyp pre dokument DNR
+- [docs/screenshots](docs/screenshots) – ER diagram a screenshoty
+- [DEPLOY.md](DEPLOY.md) – nasadenie na Vercel a Turso

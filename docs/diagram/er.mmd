@@ -1,0 +1,35 @@
+erDiagram
+  User ||--o{ Session : "má"
+  User ||--o{ Application : "podáva"
+  User ||--o{ AuditLog : "vykonal"
+  Period ||--o{ Criterion : "definuje"
+  Period ||--o{ Application : "zahŕňa"
+  Period ||--o{ RankingRun : "vyhodnocuje"
+  Dorm ||--o{ RoomType : "ponúka"
+  Dorm ||--o{ Preference : "je v"
+  Application ||--o{ Preference : "uvádza"
+  Application ||--o{ Document : "prikladá"
+  Application ||--o| Allocation : "dostane"
+  Application ||--o{ Appeal : "odvolanie"
+  Application ||--o{ RankingEntry : "umiestnenie"
+  Appeal ||--o{ Document : "príloha"
+  RankingRun ||--o{ RankingEntry : "obsahuje"
+  RankingRun ||--o{ Allocation : "potvrdil"
+  RoomType ||--o{ Allocation : "miesto"
+  Document ||--|| StoredFile : "obsah"
+
+  User { string login UK string role string aisId UK string totpSecret }
+  Period { string academicYear UK datetime submitTo datetime editTo datetime appealTo datetime criteriaApprovedAt }
+  Criterion { string key int weight }
+  Dorm { string code UK string name string address }
+  RoomType { int beds int capacity }
+  Application { string status float aisGpa int aisDistanceKm int socialLevel bool claimsSocial bool claimsHealth }
+  Preference { int rank }
+  Document { string type string status string storageKey datetime retainUntil }
+  StoredFile { string key PK bytes data }
+  RankingRun { string criteriaSnapshot datetime confirmedAt }
+  RankingEntry { int rank float points string breakdown }
+  Allocation { string applicationId UK }
+  Appeal { string status float pointsAdjustment string decisionNote }
+  AuditLog { string action string entityType string entityId string detail }
+  Session { bool verified int otpAttempts datetime expiresAt }

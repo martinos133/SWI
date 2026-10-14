@@ -15,7 +15,8 @@
     "retencia": "tsx scripts/retention.ts",
     "e2e:server": "prisma migrate deploy && tsx prisma/seed.ts && next build && next start -p $PORT",
     "test:e2e": "playwright test --project=e2e",
-    "screenshots": "playwright test --project=screenshots"
+    "screenshots": "playwright test --project=screenshots",
+    "db:deploy": "tsx scripts/apply-migrations.mts"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",
