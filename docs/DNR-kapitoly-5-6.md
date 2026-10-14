@@ -1,5 +1,6 @@
 # Doplnenie DNR – kapitoly 5 a 6
 
+> Aktuálna verzia dokumentu je `SWI1_W1_Ziadost_o_ubytovanie_B_5.docx` (verzia 1.7) – požiadavky S.01 – S.42 v tvare „Systém bude …“. Tento súbor obsahuje podklady ku kapitolám 5 a 6.
 Podklady k dokumentu *Detailný návrh riešenia – Žiadosť o ubytovanie B*. Kapitola 5
 nahrádza vzorový diagram (Project/Employee), kapitola 6 opisuje prototyp, ktorý je
 v tomto repozitári.
@@ -87,7 +88,7 @@ Prototyp overuje oblasti, v ktorých sú najväčšie riziká návrhu:
 
 ### 6.2 Výsledok experimentu
 
-Prototyp pokrýva všetky požiadavky Must (S.01 – S.16) a prípady použitia UC.01 – UC.10
+Prototyp pokrýva všetky požiadavky Must (S.01 – S.42) a prípady použitia UC.01 – UC.10
 pre všetky štyri roly. Overené bolo:
 
 - celý priebeh konania od podania žiadosti cez overenie dokladov, výpočet poradia a pridelenie
@@ -98,7 +99,7 @@ pre všetky štyri roly. Overené bolo:
   ak jeho preferovaný internát ešte nie je plný, a naopak (obrázok 24),
 - študent vidí iba vlastnú žiadosť a doklady, iný študent dostane pri pokuse o prístup k
   cudziemu dokladu chybu 403,
-- 13 unit testov a 15 end-to-end testov prechádza; každá obrazovka každej roly spĺňa
+- 13 unit testov a 18 end-to-end testov prechádza; záťažový test (50 súbežných používateľov, 30 s) spracoval 2 828 požiadaviek bez chyby, 99 % odpovedí do 1,0 s; každá obrazovka každej roly spĺňa
   WCAG 2.2 AA podľa automatickej kontroly axe a na šírke 375 px nemá vodorovný posun.
 
 **Screenshoty** (súbory v priečinku `docs/screenshots`):
