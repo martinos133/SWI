@@ -42,7 +42,7 @@ test("screenshoty celého konania", async ({ page }) => {
   await page.goto("/student/doklady");
   await shot(page, "08-doklady-vyzva-na-doplnenie");
 
-  await login(page, "kovacova");
+  await login(page, "muha");
   await shot(page, "09-referent-zoznam-ziadosti");
   await page.getByRole("link", { name: "Samuel Oravec" }).click();
   await page.waitForURL(/\/referent\/ziadosti\//);
@@ -50,14 +50,14 @@ test("screenshoty celého konania", async ({ page }) => {
   await page.goto("/referent/terminy");
   await shot(page, "11-referent-terminy");
 
-  await login(page, "horvath");
+  await login(page, "galova");
   await page.goto("/komisia/kriteria");
   await shot(page, "12-komisia-kriteria-a-vahy", true);
 
-  await login(page, "balaz");
+  await login(page, "francisci");
   await shot(page, "13-spravca-kapacity", true);
 
-  await login(page, "kovacova");
+  await login(page, "muha");
   await page.goto("/referent/poradie");
   await page.getByRole("button", { name: "Vypočítať poradie" }).click();
   await page.waitForURL(/beh=/);
@@ -87,7 +87,7 @@ test("screenshoty celého konania", async ({ page }) => {
   await page.getByRole("button", { name: "Podať odvolanie" }).click();
   await page.getByText("Posudzuje sa").waitFor();
 
-  await login(page, "horvath");
+  await login(page, "galova");
   await page.getByRole("radio", { name: "Vyhovieť" }).click();
   await page.getByLabel("Úprava bodov").fill("5");
   await page

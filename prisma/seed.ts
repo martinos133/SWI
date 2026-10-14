@@ -5,7 +5,15 @@ import type {
   DocumentType,
 } from "../src/generated/prisma/enums";
 import { generateSecret } from "otplib";
+import { randomBytes } from "node:crypto";
 import { aisRecordFor } from "../src/lib/ais";
+import {
+  allocate,
+  CRITERIA_ORDER,
+  rank,
+  type Candidate,
+  type CriterionWeight,
+} from "../src/lib/ranking";
 import { getPrisma } from "../src/lib/prisma";
 import { storeEncrypted } from "../src/lib/storage";
 
@@ -109,34 +117,58 @@ async function main() {
   await db.session.deleteMany();
   await db.user.deleteMany();
 
-  console.log("Zamestnanci…");
+  console.log("Zamestnanci (projektový tím)…");
+  // Referent ubytovacieho oddelenia je v zadaní označený ako „administrátor“.
   const referent = await db.user.create({
     data: {
-      login: "kovacova",
-      email: "jana.kovacova@uniba.example",
-      name: "Jana Kováčová",
+      login: "muha",
+      email: "muha@becode.sk",
+      name: "Martin Muha",
       role: "REFERENT",
       totpSecret: generateSecret(),
     },
   });
   const komisia = await db.user.create({
     data: {
-      login: "horvath",
-      email: "peter.horvath@uniba.example",
-      name: "prof. Peter Horváth",
+      login: "galova",
+      email: "dora.galova@uniba.example",
+      name: "Dóra Gálová",
       role: "KOMISIA",
       totpSecret: generateSecret(),
     },
   });
   await db.user.create({
     data: {
-      login: "balaz",
-      email: "milan.balaz@uniba.example",
-      name: "Milan Baláž",
+      login: "francisci",
+      email: "adrian.francisci@uniba.example",
+      name: "Adrián Francisci",
       role: "SPRAVCA",
       totpSecret: generateSecret(),
     },
   });
+
+  // Pomocníci na históriu: auditný záznam a odoslané e-maily s dátumom v minulosti.
+  const log = (
+    actorId: string | null,
+    action: string,
+    entityType: string,
+    entityId: string,
+    createdAt: Date,
+    detail: Record<string, unknown> = {},
+  ) =>
+    db.auditLog.create({
+      data: { actorId, action, entityType, entityId, createdAt, detail: JSON.stringify(detail) },
+    });
+  const statusMail = (to: string, name: string, label: string, text: string, createdAt: Date) =>
+    db.emailLog.create({
+      data: {
+        to,
+        subject: `Stav vašej žiadosti o ubytovanie: ${label}`,
+        body: `Dobrý deň, ${name},\n\nstav vašej žiadosti o ubytovanie sa zmenil na „${label}“.\n${text}\n\nUbytovacie oddelenie`,
+        status: "LOG",
+        createdAt,
+      },
+    });
 
   console.log("Internáty…");
   const dormData = [
@@ -271,6 +303,16 @@ async function main() {
     "ZRUSENA",
   ];
 
+  const students: { id: string; aisId: string; name: string; email: string; index: number }[] = [];
+  const NOTES = [
+    "Chcel by som bývať s Jakubom Hudcom, sme spolužiaci z ročníka.",
+    "Mám alergiu na prach, prosím o izbu bez kobercov, ak je to možné.",
+    "Popri štúdiu pracujem v noci, uvítam jednolôžkovú izbu.",
+    null,
+    null,
+    null,
+  ];
+
   for (const [index, [first, last]] of people.entries()) {
     const aisId = `AIS-${410000 + (index === 1 ? 1 : index === 0 ? 2 : index + 10)}`;
     const login =
@@ -285,6 +327,8 @@ async function main() {
         totpSecret: generateSecret(),
       },
     });
+
+    students.push({ id: student.id, aisId, name: student.name, email: student.email, index });
 
     // Lucia (index 1) je čistý demo účet bez žiadosti.
     if (index === 1) continue;
@@ -313,6 +357,7 @@ async function main() {
         aisSyncedAt: submittedAt ?? days(-8),
         phone: `+421 9${Math.floor(10 + rand() * 89)} ${Math.floor(100 + rand() * 899)} ${Math.floor(100 + rand() * 899)}`,
         preferredBeds: pick([1, 2, 2, 2, 3, null]),
+        note: pick(NOTES),
         claimsSocial,
         claimsHealth,
         socialLevel: reviewed && claimsSocial ? 1 + Math.floor(rand() * 3) : null,
@@ -325,6 +370,46 @@ async function main() {
         },
       },
     });
+
+    // História žiadosti v auditnom zázname a e-mailoch.
+    if (submittedAt) {
+      const name = `${first} ${last}`;
+      const email = student.email;
+      await log(student.id, "ZIADOST_PODANA", "Application", application.id, submittedAt);
+      await log(student.id, "STAV_ZMENENY", "Application", application.id, submittedAt, {
+        from: "ROZPRACOVANA",
+        to: "PODANA",
+      });
+      await statusMail(email, name, "Podaná", "Žiadosť sme prijali. Referent ju čoskoro začne overovať.", submittedAt);
+      const reviewStart = new Date(Math.min(submittedAt.getTime() + 86_400_000, days(-2).getTime()));
+      if (["OVERUJE_SA", "CAKA_NA_DOPLNENIE", "VYHODNOCUJE_SA"].includes(status)) {
+        await log(referent.id, "STAV_ZMENENY", "Application", application.id, reviewStart, {
+          from: "PODANA",
+          to: "OVERUJE_SA",
+        });
+        await statusMail(email, name, "Overuje sa", "Referent kontroluje vaše doklady.", reviewStart);
+      }
+      if (status === "CAKA_NA_DOPLNENIE") {
+        await log(referent.id, "STAV_ZMENENY", "Application", application.id, days(-1), {
+          from: "OVERUJE_SA",
+          to: "CAKA_NA_DOPLNENIE",
+        });
+      }
+      if (status === "VYHODNOCUJE_SA") {
+        await log(referent.id, "STAV_ZMENENY", "Application", application.id, days(-1), {
+          from: "OVERUJE_SA",
+          to: "VYHODNOCUJE_SA",
+        });
+        await statusMail(email, name, "Vyhodnocuje sa", "Doklady sú v poriadku. Žiadosť čaká na výpočet poradia.", days(-1));
+      }
+      if (status === "ZRUSENA") {
+        await log(student.id, "ZIADOST_ZRUSENA", "Application", application.id, days(-4));
+        await log(student.id, "STAV_ZMENENY", "Application", application.id, days(-4), {
+          from: "PODANA",
+          to: "ZRUSENA",
+        });
+      }
+    }
 
     const docs: [DocumentType, DocumentStatus, string | null][] = [];
     if (claimsSocial) {
@@ -366,6 +451,28 @@ async function main() {
           uploadedAt: submittedAt ?? days(-8),
         },
       });
+      await log(student.id, "DOKLAD_NAHRANY", "Document", doc.id, doc.uploadedAt, {
+        applicationId: application.id,
+        type,
+        fileName,
+      });
+      if (docStatus === "DOPLNIT") {
+        await db.emailLog.create({
+          data: {
+            to: student.email,
+            subject: `Doplňte doklad: ${type === "PRIJEM" ? "Potvrdenie o príjme" : "Zdravotný doklad"}`,
+            body: `Dobrý deň, ${first} ${last},\n\nk vašej žiadosti o ubytovanie potrebujeme doplniť doklad.\n\nPoznámka referenta: ${note}\n\nUbytovacie oddelenie`,
+            status: "LOG",
+            createdAt: days(-1),
+          },
+        });
+      }
+      if (docStatus === "OVERENY" && type === "PRIJEM") {
+        await log(referent.id, "SOCIALNA_SITUACIA_POSUDENA", "Application", application.id, days(-1), {
+          from: null,
+          to: application.socialLevel,
+        });
+      }
       if (docStatus !== "NAHRANY") {
         await db.auditLog.create({
           data: {
@@ -374,13 +481,15 @@ async function main() {
               docStatus === "OVERENY" ? "DOKLAD_SCHVALENY" : "DOKLAD_VYZIADANE_DOPLNENIE",
             entityType: "Document",
             entityId: doc.id,
-            detail: JSON.stringify({ applicationId: application.id, note }),
+            detail: JSON.stringify({ applicationId: application.id, type, note }),
             createdAt: days(-1),
           },
         });
       }
     }
   }
+
+  await seedPreviousYear({ students, dorms: dorms.map((d) => d.id), referentId: referent.id, komisiaId: komisia.id, log });
 
   const counts = {
     users: await db.user.count(),
@@ -397,3 +506,251 @@ main()
     process.exit(1);
   })
   .finally(() => db.$disconnect());
+
+type Log = (
+  actorId: string | null,
+  action: string,
+  entityType: string,
+  entityId: string,
+  createdAt: Date,
+  detail?: Record<string, unknown>,
+) => Promise<unknown>;
+
+/**
+ * Minulý akademický rok – uzavreté konanie s potvrdeným výpočtom poradia,
+ * prideleniami, náhradníkmi, odvolaniami a dokladmi zmazanými po uplynutí doby uchovávania.
+ */
+async function seedPreviousYear({
+  students,
+  dorms,
+  referentId,
+  komisiaId,
+  log,
+}: {
+  students: { id: string; aisId: string; name: string; email: string; index: number }[];
+  dorms: string[];
+  referentId: string;
+  komisiaId: string;
+  log: Log;
+}) {
+  console.log("Minulý akademický rok…");
+  const year = today.getFullYear();
+  const current = await db.criterion.findMany({ where: { period: { isActive: true } } });
+  const prev = await db.period.create({
+    data: {
+      academicYear: `${year}/${String((year + 1) % 100).padStart(2, "0")}`,
+      submitFrom: days(-377),
+      submitTo: days(-317),
+      editTo: days(-317),
+      appealTo: days(-270),
+      isActive: false,
+      criteriaApprovedAt: days(-390),
+      criteriaApprovedBy: komisiaId,
+      criteria: {
+        create: current.map(({ key, name, description, weight }) => ({ key, name, description, weight })),
+      },
+    },
+    include: { criteria: true },
+  });
+  await log(komisiaId, "KRITERIA_SCHVALENE", "Period", prev.id, days(-390), Object.fromEntries(prev.criteria.map((c) => [c.key, c.weight])));
+
+  const participants = students.filter((s) => s.index >= 2).slice(0, 22);
+  const owner = new Map<string, (typeof participants)[number]>();
+  const candidates: Candidate[] = [];
+
+  for (const student of participants) {
+    const ais = aisRecordFor(student.aisId);
+    const gpa = Math.round(Math.min(4, Math.max(1, ais.gpa + (rand() - 0.5) * 0.4)) * 100) / 100;
+    const claimsSocial = rand() < 0.4;
+    const claimsHealth = rand() < 0.12;
+    const socialLevel = claimsSocial ? 1 + Math.floor(rand() * 3) : null;
+    const submittedAt = days(-376 + Math.floor(rand() * 50));
+    const preferences = shuffle(dorms).slice(0, 2 + Math.floor(rand() * 3));
+    const preferredBeds = pick([1, 2, 2, 3, null]);
+
+    const app = await db.application.create({
+      data: {
+        studentId: student.id,
+        periodId: prev.id,
+        status: "VYHODNOCUJE_SA",
+        aisYear: Math.max(1, ais.year - 1),
+        aisProgram: ais.program,
+        aisFaculty: ais.faculty,
+        aisGpa: gpa,
+        aisDistanceKm: ais.distanceKm,
+        aisSyncedAt: days(-316),
+        phone: `+421 9${Math.floor(10 + rand() * 89)} ${Math.floor(100 + rand() * 899)} ${Math.floor(100 + rand() * 899)}`,
+        preferredBeds,
+        claimsSocial,
+        claimsHealth,
+        socialLevel,
+        submittedAt,
+        createdAt: submittedAt,
+        preferences: { create: preferences.map((dormId, i) => ({ dormId, rank: i + 1 })) },
+      },
+    });
+    owner.set(app.id, student);
+    await log(student.id, "ZIADOST_PODANA", "Application", app.id, submittedAt);
+
+    // Doklady minulého roka sú už po uplynutí doby uchovávania zmazané (E.04).
+    const types: DocumentType[] = [...(claimsSocial ? ["PRIJEM" as const] : []), ...(claimsHealth ? ["ZDRAVOTNY" as const] : [])];
+    for (const type of types) {
+      const doc = await db.document.create({
+        data: {
+          applicationId: app.id,
+          type,
+          status: "OVERENY",
+          fileName: type === "PRIJEM" ? "potvrdenie-o-prijme.pdf" : "lekarska-sprava.pdf",
+          mimeType: "application/pdf",
+          size: 48_000 + Math.floor(rand() * 200_000),
+          storageKey: randomBytes(16).toString("hex"),
+          reviewedBy: referentId,
+          reviewedAt: days(-322),
+          retainUntil: days(-4),
+          purgedAt: days(-3),
+          uploadedAt: submittedAt,
+        },
+      });
+      await log(referentId, "DOKLAD_SCHVALENY", "Document", doc.id, days(-322), { applicationId: app.id, type });
+      await log(null, "DOKLAD_ZMAZANY_RETENCIA", "Document", doc.id, days(-3), { applicationId: app.id, type });
+    }
+
+    candidates.push({
+      applicationId: app.id,
+      gpa,
+      distanceKm: ais.distanceKm,
+      socialLevel,
+      healthApproved: claimsHealth,
+      submittedAt,
+      preferredBeds,
+      preferences,
+    });
+  }
+
+  const criteria: CriterionWeight[] = prev.criteria
+    .map((c) => ({ key: c.key, name: c.name, weight: c.weight }))
+    .sort((a, b) => CRITERIA_ORDER.indexOf(a.key) - CRITERIA_ORDER.indexOf(b.key));
+  const rooms = await db.roomType.findMany();
+  const ranked = rank(criteria, candidates);
+  const proposal = allocate(
+    ranked,
+    rooms.map((r) => ({ roomTypeId: r.id, dormId: r.dormId, beds: r.beds, free: r.capacity })),
+  );
+
+  const run = await db.rankingRun.create({
+    data: {
+      periodId: prev.id,
+      createdBy: referentId,
+      createdAt: days(-316),
+      criteriaSnapshot: JSON.stringify(criteria),
+      confirmedAt: days(-315),
+      confirmedBy: referentId,
+      entries: {
+        create: ranked.map((r) => ({
+          applicationId: r.applicationId,
+          rank: r.rank,
+          points: r.points,
+          breakdown: JSON.stringify({
+            ...r.breakdown,
+            _meta: {
+              preferences: r.preferences,
+              preferredBeds: r.preferredBeds,
+              submittedAt: r.submittedAt.toISOString(),
+              gpa: r.gpa,
+            },
+          }),
+          proposedRoomTypeId: proposal.get(r.applicationId) ?? null,
+        })),
+      },
+    },
+  });
+  const assigned = ranked.filter((r) => proposal.get(r.applicationId));
+  const waitlisted = ranked.filter((r) => !proposal.get(r.applicationId));
+  await log(referentId, "PORADIE_VYPOCITANE", "RankingRun", run.id, days(-316), {
+    applications: ranked.length,
+    proposed: assigned.length,
+  });
+  await log(referentId, "PRIDELENIE_POTVRDENE", "RankingRun", run.id, days(-315), {
+    assigned: assigned.length,
+    waitlisted: waitlisted.length,
+  });
+
+  for (const r of ranked) {
+    const roomTypeId = proposal.get(r.applicationId);
+    const student = owner.get(r.applicationId)!;
+    const to = roomTypeId ? "PRIDELENA" : "NEPRIDELENA";
+    if (roomTypeId) {
+      await db.allocation.create({
+        data: {
+          applicationId: r.applicationId,
+          roomTypeId,
+          runId: run.id,
+          confirmedBy: referentId,
+          confirmedAt: days(-315),
+        },
+      });
+    }
+    await db.application.update({ where: { id: r.applicationId }, data: { status: to } });
+    await log(referentId, "STAV_ZMENENY", "Application", r.applicationId, days(-315), { from: "VYHODNOCUJE_SA", to });
+    await db.emailLog.create({
+      data: {
+        to: student.email,
+        subject: `Stav vašej žiadosti o ubytovanie: ${roomTypeId ? "Miesto pridelené" : "Náhradník"}`,
+        body: `Dobrý deň, ${student.name},\n\n${roomTypeId ? "máte pridelené miesto na internáte." : "miesto vám v prvom kole nevyšlo, ste v poradí náhradníkov a môžete sa odvolať."}\n\nUbytovacie oddelenie`,
+        status: "LOG",
+        createdAt: days(-315),
+      },
+    });
+  }
+
+  const appeals = [
+    {
+      text: "Od leta sa zmenila finančná situácia našej rodiny, mama prišla o prácu. Prikladám potvrdenie z úradu práce, ktoré som v čase podania žiadosti ešte nemal(a).",
+      upheld: true,
+      adjustment: 4,
+      note: "Komisia uznala zmenu sociálnej situácie a pripočítala 4 body. Voľné miesto zatiaľ nie je, ostávate prvý medzi náhradníkmi.",
+    },
+    {
+      text: "Nesúhlasím s výsledkom, kamarát s horším priemerom miesto dostal.",
+      upheld: false,
+      adjustment: null,
+      note: "Pridelenie zohľadňuje aj vzdialenosť bydliska a preferencie internátov. Výpočet je v poriadku, odvolanie zamietame.",
+    },
+  ];
+  for (const [i, a] of appeals.entries()) {
+    const r = waitlisted[i];
+    if (!r) break;
+    const student = owner.get(r.applicationId)!;
+    const appeal = await db.appeal.create({
+      data: {
+        applicationId: r.applicationId,
+        text: a.text,
+        status: a.upheld ? "UZNANE" : "ZAMIETNUTE",
+        pointsAdjustment: a.adjustment,
+        decisionNote: a.note,
+        decidedBy: komisiaId,
+        decidedAt: days(-290 + i),
+        createdAt: days(-305 + i),
+      },
+    });
+    await log(student.id, "ODVOLANIE_PODANE", "Appeal", appeal.id, days(-305 + i), { applicationId: r.applicationId });
+    await log(student.id, "STAV_ZMENENY", "Application", r.applicationId, days(-305 + i), { from: "NEPRIDELENA", to: "ODVOLANIE" });
+    if (a.adjustment) {
+      await log(komisiaId, "BODY_ZMENENE", "Application", r.applicationId, days(-290 + i), { appealId: appeal.id, adjustment: a.adjustment });
+    }
+    await log(komisiaId, "ODVOLANIE_ROZHODNUTE", "Appeal", appeal.id, days(-290 + i), {
+      applicationId: r.applicationId,
+      upheld: a.upheld,
+    });
+    await log(komisiaId, "STAV_ZMENENY", "Application", r.applicationId, days(-290 + i), { from: "ODVOLANIE", to: "NEPRIDELENA" });
+    await db.emailLog.create({
+      data: {
+        to: student.email,
+        subject: a.upheld ? "Odvolaniu sa vyhovelo" : "Odvolanie bolo zamietnuté",
+        body: `Dobrý deň, ${student.name},\n\nubytovacia komisia rozhodla o vašom odvolaní.\n\nOdôvodnenie: ${a.note}\n\nUbytovacie oddelenie`,
+        status: "LOG",
+        createdAt: days(-290 + i),
+      },
+    });
+  }
+}

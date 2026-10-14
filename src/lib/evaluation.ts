@@ -98,7 +98,7 @@ export async function computeRun(periodId: string, actorId: string) {
     .map((c) => ({ key: c.key, name: c.name, weight: c.weight }))
     .sort((a, b) => CRITERIA_ORDER.indexOf(a.key) - CRITERIA_ORDER.indexOf(b.key));
   const ranked = rank(criteria, apps.map(candidateFrom));
-  const rooms = await freeRooms();
+  const rooms = await freeRooms(periodId);
   const proposal = allocate(ranked, rooms);
 
   const run = await db.rankingRun.create({
@@ -139,11 +139,14 @@ export async function computeRun(periodId: string, actorId: string) {
   return run;
 }
 
-/** Voľné miesta podľa typu izby = kapacita mínus potvrdené pridelenia. */
-export async function freeRooms() {
-  const rooms = await db.roomType.findMany({
-    include: { _count: { select: { allocations: true } } },
-  });
+/** Počet pridelení typu izby v danom konaní – kapacita platí pre každý akademický rok zvlášť. */
+export const allocationsInPeriod = (periodId: string) => ({
+  _count: { select: { allocations: { where: { application: { periodId } } } } },
+});
+
+/** Voľné miesta podľa typu izby = kapacita mínus potvrdené pridelenia v konaní. */
+export async function freeRooms(periodId: string) {
+  const rooms = await db.roomType.findMany({ include: allocationsInPeriod(periodId) });
   return rooms.map((r) => ({
     roomTypeId: r.id,
     dormId: r.dormId,
@@ -217,7 +220,7 @@ export async function confirmRun(runId: string, actorId: string) {
       if (entry.proposedRoomTypeId) {
         const room = await tx.roomType.findUniqueOrThrow({
           where: { id: entry.proposedRoomTypeId },
-          include: { _count: { select: { allocations: true } } },
+          include: allocationsInPeriod(run.periodId),
         });
         if (room._count.allocations >= room.capacity) {
           throw new EvaluationError(
@@ -257,9 +260,9 @@ export async function confirmRun(runId: string, actorId: string) {
 }
 
 /** Voľné typy izieb s popisom pre výber (odvolania, uvoľnené miesta). */
-export async function freeRoomOptions() {
+export async function freeRoomOptions(periodId: string) {
   const [rooms, dorms] = await Promise.all([
-    freeRooms(),
+    freeRooms(periodId),
     db.dorm.findMany({ include: { roomTypes: true } }),
   ]);
   return rooms

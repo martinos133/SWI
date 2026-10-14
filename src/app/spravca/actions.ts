@@ -5,6 +5,8 @@ import { z } from "zod";
 import { audit } from "@/lib/audit";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { allocationsInPeriod } from "@/lib/evaluation";
+import { getActivePeriod } from "@/lib/period";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -21,9 +23,10 @@ export async function updateCapacity(roomTypeId: string, capacity: number): Prom
   if (!Number.isInteger(capacity) || capacity < 0 || capacity > 2000) {
     return { ok: false, error: "Zadajte celé číslo od 0 do 2000." };
   }
+  const period = await getActivePeriod();
   const room = await db.roomType.findUnique({
     where: { id: roomTypeId },
-    include: { _count: { select: { allocations: true } }, dorm: true },
+    include: { ...allocationsInPeriod(period?.id ?? ""), dorm: true },
   });
   if (!room) return { ok: false, error: "Typ izby neexistuje." };
   if (capacity < room._count.allocations) {

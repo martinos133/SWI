@@ -14,11 +14,12 @@ export const dynamic = "force-dynamic";
  */
 export default async function SsoPage() {
   const accounts = await db.user.findMany({
-    where: { login: { in: ["kollar", "novakova", "kovacova", "horvath", "balaz"] } },
+    where: { login: { in: ["kollar", "novakova", "muha", "galova", "francisci"] } },
     select: { login: true, name: true, role: true },
   });
-  const order = ["novakova", "kollar", "kovacova", "horvath", "balaz"];
+  const order = ["muha", "novakova", "kollar", "galova", "francisci"];
   const notes: Record<string, string> = {
+    muha: "Referent ubytovacieho oddelenia – administrátor",
     novakova: "Študentka – ešte nemá žiadosť",
     kollar: "Študent – žiadosť čaká na doplnenie",
   };

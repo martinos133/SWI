@@ -6,6 +6,7 @@ import { changeStatus, currentDocument, requiredDocumentTypes } from "@/lib/appl
 import { audit } from "@/lib/audit";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { allocationsInPeriod } from "@/lib/evaluation";
 import { mails, sendMail } from "@/lib/mail";
 import { DOCUMENT_TYPE } from "@/lib/status";
 
@@ -156,7 +157,7 @@ export async function assignFreePlace(applicationId: string, roomTypeId: string)
     await db.$transaction(async (tx) => {
       const room = await tx.roomType.findUniqueOrThrow({
         where: { id: roomTypeId },
-        include: { _count: { select: { allocations: true } }, dorm: true },
+        include: { ...allocationsInPeriod(app.periodId), dorm: true },
       });
       if (room._count.allocations >= room.capacity) {
         throw new CapacityError(`V internáte ${room.dorm.name} už nie je voľné miesto tohto typu.`);

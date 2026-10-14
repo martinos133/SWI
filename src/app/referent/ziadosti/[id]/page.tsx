@@ -37,7 +37,7 @@ export default async function ApplicationDetail({ params }: PageProps<"/referent
     take: 50,
   });
 
-  const freeRoomList = app.status === "NEPRIDELENA" ? await freeRoomOptions() : [];
+  const freeRoomList = app.status === "NEPRIDELENA" ? await freeRoomOptions(app.periodId) : [];
 
   return (
     <>

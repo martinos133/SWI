@@ -6,9 +6,9 @@ test.describe.configure({ mode: "serial" });
 test("prihlásenie vedie každú rolu na jej úvodnú stránku", async ({ page }) => {
   const homes: [string, string, string][] = [
     ["novakova", "/student", "Dobrý deň, Lucia."],
-    ["kovacova", "/referent", "Žiadosti"],
-    ["horvath", "/komisia", "Odvolania"],
-    ["balaz", "/spravca", "Internáty a kapacity"],
+    ["muha", "/referent", "Žiadosti"],
+    ["galova", "/komisia", "Odvolania"],
+    ["francisci", "/spravca", "Internáty a kapacity"],
   ];
   for (const [account, path, heading] of homes) {
     await login(page, account);
@@ -32,7 +32,7 @@ test("študent sa nedostane k stránkam referenta ani k cudzím dokladom", async
   const anonymous = await request.get("/doklad/akykolvek", { maxRedirects: 0 });
   expect(anonymous.status()).toBe(307);
 
-  await login(page, "kovacova");
+  await login(page, "muha");
   await page.getByRole("link", { name: "Samuel Oravec" }).click();
   const foreignDoc = await page.locator('a[href^="/doklad/"]').first().getAttribute("href");
 
@@ -80,7 +80,7 @@ test("študent doplní vyžiadaný doklad a žiadosť sa vráti na overenie", as
 });
 
 test("referent posúdi doklady a vyžiada doplnenie", async ({ page }) => {
-  await login(page, "kovacova");
+  await login(page, "muha");
   await page.getByRole("link", { name: "Tomáš Kollár" }).click();
   const income = page.locator("article").filter({ hasText: "Potvrdenie o príjme" });
   await income.getByRole("radio", { name: "2" }).check({ force: true });
@@ -93,7 +93,7 @@ test("referent posúdi doklady a vyžiada doplnenie", async ({ page }) => {
 });
 
 test("výpočet poradia neprekročí kapacitu a pridelenie sa dá potvrdiť", async ({ page }) => {
-  await login(page, "kovacova");
+  await login(page, "muha");
   await page.goto("/referent/poradie");
   await page.getByRole("button", { name: "Vypočítať poradie" }).click();
   await page.waitForURL(/beh=/);
@@ -112,7 +112,7 @@ test("výpočet poradia neprekročí kapacitu a pridelenie sa dá potvrdiť", as
 });
 
 test("študent s prideleným miestom vidí kľúčenku a body", async ({ page }) => {
-  await login(page, "kovacova");
+  await login(page, "muha");
   await page.goto("/referent?stav=rozhodnute");
   const first = page.locator("tbody tr").filter({ hasText: "Miesto pridelené" }).first();
   const studentLogin = (await first.locator("p").first().innerText()).split(",")[0];
@@ -124,7 +124,7 @@ test("študent s prideleným miestom vidí kľúčenku a body", async ({ page })
 });
 
 test("náhradník sa odvolá a komisia rozhodne", async ({ page }) => {
-  await login(page, "kovacova");
+  await login(page, "muha");
   await page.goto("/referent?stav=rozhodnute");
   const row = page.locator("tbody tr").filter({ hasText: "Náhradník" }).first();
   const studentLogin = (await row.locator("p").first().innerText()).split(",")[0];
@@ -137,7 +137,7 @@ test("náhradník sa odvolá a komisia rozhodne", async ({ page }) => {
   await page.getByRole("button", { name: "Podať odvolanie" }).click();
   await expect(page.getByText("Posudzuje sa")).toBeVisible();
 
-  await login(page, "horvath");
+  await login(page, "galova");
   await page.getByRole("radio", { name: "Vyhovieť" }).click();
   await page.getByLabel("Úprava bodov").fill("5");
   await page

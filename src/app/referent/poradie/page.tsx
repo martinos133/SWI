@@ -36,7 +36,7 @@ export default async function RankingPage({ searchParams }: PageProps<"/referent
     db.application.count({
       where: { periodId: period.id, status: { in: ["PODANA", "OVERUJE_SA", "CAKA_NA_DOPLNENIE"] } },
     }),
-    freeRooms(),
+    freeRooms(period.id),
     db.rankingRun.findMany({
       where: { periodId: period.id },
       orderBy: { createdAt: "desc" },

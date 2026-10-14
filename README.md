@@ -26,15 +26,19 @@ sa v ukážkovom režime zobrazí priamo na stránke overenia.
 |---|---|---|
 | `novakova` | Študentka | Ešte nemá žiadosť – celý postup od vyplnenia po podanie |
 | `kollar` | Študent | Žiadosť čaká na doplnenie dokladu |
-| `kovacova` | Referentka | Posúdenie dokladov, termíny, výpočet poradia a pridelenie |
-| `horvath` | Ubytovacia komisia | Kritériá a váhy, rozhodovanie o odvolaniach |
-| `balaz` | Správca internátov | Kapacity internátov a typy izieb |
+| `muha` | Martin Muha – referent (administrátor) | Posúdenie dokladov, termíny a konania, výpočet poradia a pridelenie |
+| `galova` | Dóra Gálová – ubytovacia komisia | Kritériá a váhy, rozhodovanie o odvolaniach |
+| `francisci` | Adrián Francisci – správca internátov | Kapacity internátov a typy izieb |
 
 Prihlásiť sa dá aj ľubovoľným študentom zo seedu, ak do poľa zadáš jeho login (napr. `benko18`).
 
 Termíny konania v seede sa počítajú od dňa spustenia (podávanie práve prebieha), takže ukážka
 funguje kedykoľvek. Pred prezentáciou stačí `npm run db:seed`. Nové konanie na ďalší akademický
 rok založí referent v časti *Termíny*.
+
+Seed obsahuje aj uzavretý minulý akademický rok – potvrdený výpočet poradia, pridelenia,
+náhradníkov, dve rozhodnuté odvolania a doklady zmazané po uplynutí doby uchovávania.
+Referent ho zobrazí prepnutím konania v časti *Termíny*.
 
 ## Skripty
 

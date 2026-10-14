@@ -40,7 +40,7 @@ export default async function AppealsPage() {
   const pending = appeals.filter((a) => a.status === "PODANE");
   const decided = appeals.filter((a) => a.status !== "PODANE").reverse();
 
-  const roomOptions = await freeRoomOptions();
+  const roomOptions = await freeRoomOptions(period.id);
 
   return (
     <>

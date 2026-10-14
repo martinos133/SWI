@@ -2,18 +2,21 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { allocationsInPeriod } from "@/lib/evaluation";
+import { getActivePeriod } from "@/lib/period";
 import { AddDormForm, AddRoomForm, CapacityInput } from "./capacity";
 
 export const metadata: Metadata = { title: "Internáty a kapacity" };
 
 export default async function CapacityPage() {
   await requireUser(["SPRAVCA"]);
+  const period = await getActivePeriod();
   const dorms = await db.dorm.findMany({
     orderBy: { name: "asc" },
     include: {
       roomTypes: {
         orderBy: { beds: "asc" },
-        include: { _count: { select: { allocations: true } } },
+        include: allocationsInPeriod(period?.id ?? ""),
       },
     },
   });
@@ -25,7 +28,7 @@ export default async function CapacityPage() {
     <>
       <PageHeader
         title="Internáty a kapacity"
-        description={`Spolu ${total} miest na prideľovanie, z toho ${taken} už pridelených. Kapacitu nemožno znížiť pod počet pridelených miest.`}
+        description={`Spolu ${total} miest na prideľovanie, v akademickom roku ${period?.academicYear ?? "–"} je z nich pridelených ${taken}. Kapacitu nemožno znížiť pod počet pridelených miest.`}
       />
 
       <div className="flex flex-col gap-8">

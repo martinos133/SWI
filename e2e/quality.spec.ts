@@ -5,11 +5,11 @@ const PAGES: { account: string | null; paths: string[] }[] = [
   { account: null, paths: ["/login", "/sso", "/neexistujuca-stranka"] },
   { account: "kollar", paths: ["/student", "/student/ziadost", "/student/doklady", "/student/odvolanie"] },
   {
-    account: "kovacova",
+    account: "muha",
     paths: ["/referent", "/referent?stav=vsetky", "/referent/poradie", "/referent/terminy", "/audit", "/audit?zalozka=emaily"],
   },
-  { account: "horvath", paths: ["/komisia", "/komisia/kriteria"] },
-  { account: "balaz", paths: ["/spravca"] },
+  { account: "galova", paths: ["/komisia", "/komisia/kriteria"] },
+  { account: "francisci", paths: ["/spravca"] },
 ];
 
 for (const { account, paths } of PAGES) {
@@ -29,7 +29,7 @@ for (const { account, paths } of PAGES) {
 }
 
 test("prístupnosť a mobil: detail žiadosti u referenta", async ({ page }) => {
-  await login(page, "kovacova");
+  await login(page, "muha");
   await page.goto("/referent?stav=vsetky");
   await page.locator("tbody a").first().click();
   await page.waitForURL(/\/referent\/ziadosti\//);
