@@ -20,6 +20,8 @@ export type AuditAction =
   | "ODVOLANIE_ROZHODNUTE"
   | "BODY_ZMENENE"
   | "TERMINY_ZMENENE"
+  | "KONANIE_ZALOZENE"
+  | "KONANIE_AKTIVOVANE"
   | "KRITERIA_ZMENENE"
   | "KRITERIA_SCHVALENE"
   | "KAPACITA_ZMENENA";
@@ -66,6 +68,8 @@ export const AUDIT_LABEL: Record<string, string> = {
   ODVOLANIE_ROZHODNUTE: "Rozhodnutie o odvolaní",
   BODY_ZMENENE: "Zmena bodov",
   TERMINY_ZMENENE: "Zmena termínov",
+  KONANIE_ZALOZENE: "Založené nové konanie",
+  KONANIE_AKTIVOVANE: "Zmena aktívneho konania",
   KRITERIA_ZMENENE: "Zmena kritérií",
   KRITERIA_SCHVALENE: "Kritériá schválené",
   KAPACITA_ZMENENA: "Zmena kapacity",

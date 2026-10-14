@@ -46,16 +46,12 @@ export default async function ApplicationsPage({ searchParams }: PageProps<"/ref
   const where: Prisma.ApplicationWhereInput = {
     periodId: period.id,
     ...(filter.statuses ? { status: { in: filter.statuses } } : {}),
-    ...(q
-      ? {
-          student: {
-            OR: [{ name: { contains: q } }, { login: { contains: q.toLowerCase() } }],
-          },
-        }
-      : {}),
   };
 
-  const applications = await db.application.findMany({
+  // SQLite LIKE nerozlišuje veľkosť iba pri ASCII, preto hľadáme v aplikácii
+  // bez diakritiky a veľkosti písmen („cierna“ nájde „Čierna“).
+  const needle = normalize(q);
+  const all = await db.application.findMany({
     where,
     orderBy: [{ submittedAt: "asc" }, { createdAt: "asc" }],
     include: {
@@ -63,6 +59,12 @@ export default async function ApplicationsPage({ searchParams }: PageProps<"/ref
       documents: { where: { appealId: null }, orderBy: { uploadedAt: "desc" } },
     },
   });
+  const applications = needle
+    ? all.filter(
+        (app) =>
+          normalize(app.student.name).includes(needle) || normalize(app.student.login).includes(needle),
+      )
+    : all;
 
   return (
     <>
@@ -171,4 +173,8 @@ export default async function ApplicationsPage({ searchParams }: PageProps<"/ref
       )}
     </>
   );
+}
+
+function normalize(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }

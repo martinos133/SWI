@@ -32,6 +32,10 @@ sa v ukážkovom režime zobrazí priamo na stránke overenia.
 
 Prihlásiť sa dá aj ľubovoľným študentom zo seedu, ak do poľa zadáš jeho login (napr. `benko18`).
 
+Termíny konania v seede sa počítajú od dňa spustenia (podávanie práve prebieha), takže ukážka
+funguje kedykoľvek. Pred prezentáciou stačí `npm run db:seed`. Nové konanie na ďalší akademický
+rok založí referent v časti *Termíny*.
+
 ## Skripty
 
 | Príkaz | Účel |

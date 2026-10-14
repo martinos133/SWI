@@ -20,7 +20,11 @@ const rand = () => {
 const pick = <T,>(items: T[]) => items[Math.floor(rand() * items.length)];
 const shuffle = <T,>(items: T[]) => [...items].sort(() => rand() - 0.5);
 
-const day = (iso: string) => new Date(`${iso}T12:00:00+02:00`);
+// Termíny sú relatívne k dnešku, aby ukážka fungovala kedykoľvek: podávanie práve prebieha.
+const today = new Date();
+today.setHours(12, 0, 0, 0);
+const days = (n: number) => new Date(today.getTime() + n * 86_400_000);
+const academicYear = `${today.getFullYear() + 1}/${String((today.getFullYear() + 2) % 100).padStart(2, "0")}`;
 
 const FEMALE = [
   ["Lucia", "Nováková"],
@@ -197,13 +201,13 @@ async function main() {
   console.log("Konanie a kritériá…");
   const period = await db.period.create({
     data: {
-      academicYear: "2027/28",
-      submitFrom: day("2026-10-01"),
-      submitTo: day("2026-11-30"),
-      editTo: day("2026-11-30"),
-      appealTo: day("2027-01-15"),
+      academicYear,
+      submitFrom: days(-12),
+      submitTo: days(48),
+      editTo: days(48),
+      appealTo: days(95),
       isActive: true,
-      criteriaApprovedAt: day("2026-09-22"),
+      criteriaApprovedAt: days(-21),
       criteriaApprovedBy: komisia.id,
       criteria: {
         create: [
@@ -246,7 +250,7 @@ async function main() {
       entityType: "Period",
       entityId: period.id,
       detail: JSON.stringify({ PROSPECH: 40, VZDIALENOST: 30, SOCIALNA: 20, ZDRAVOTNA: 10 }),
-      createdAt: day("2026-09-22"),
+      createdAt: days(-21),
     },
   });
 
@@ -293,7 +297,7 @@ async function main() {
     const submittedAt =
       status === "ROZPRACOVANA"
         ? null
-        : day(`2026-10-${String(2 + Math.floor(rand() * 9)).padStart(2, "0")}`);
+        : days(-10 + Math.floor(rand() * 9));
     const reviewed = ["VYHODNOCUJE_SA"].includes(status);
 
     const application = await db.application.create({
@@ -306,14 +310,14 @@ async function main() {
         aisFaculty: ais.faculty,
         aisGpa: ais.gpa,
         aisDistanceKm: ais.distanceKm,
-        aisSyncedAt: submittedAt ?? day("2026-10-05"),
+        aisSyncedAt: submittedAt ?? days(-8),
         phone: `+421 9${Math.floor(10 + rand() * 89)} ${Math.floor(100 + rand() * 899)} ${Math.floor(100 + rand() * 899)}`,
         preferredBeds: pick([1, 2, 2, 2, 3, null]),
         claimsSocial,
         claimsHealth,
         socialLevel: reviewed && claimsSocial ? 1 + Math.floor(rand() * 3) : null,
         submittedAt,
-        cancelledAt: status === "ZRUSENA" ? day("2026-10-09") : null,
+        cancelledAt: status === "ZRUSENA" ? days(-4) : null,
         preferences: {
           create: shuffle(dorms)
             .slice(0, 2 + Math.floor(rand() * 3))
@@ -357,9 +361,9 @@ async function main() {
           storageKey: await storeEncrypted(pdf),
           reviewNote: note,
           reviewedBy: docStatus === "NAHRANY" ? null : referent.id,
-          reviewedAt: docStatus === "NAHRANY" ? null : day("2026-10-11"),
-          retainUntil: day("2027-09-30"),
-          uploadedAt: submittedAt ?? day("2026-10-05"),
+          reviewedAt: docStatus === "NAHRANY" ? null : days(-1),
+          retainUntil: days(350),
+          uploadedAt: submittedAt ?? days(-8),
         },
       });
       if (docStatus !== "NAHRANY") {
@@ -371,7 +375,7 @@ async function main() {
             entityType: "Document",
             entityId: doc.id,
             detail: JSON.stringify({ applicationId: application.id, note }),
-            createdAt: day("2026-10-11"),
+            createdAt: days(-1),
           },
         });
       }
