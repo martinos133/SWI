@@ -47,3 +47,5 @@ next-env.d.ts
 /storage/
 /src/generated/
 /.claude/
+/test-results/
+/playwright-report/

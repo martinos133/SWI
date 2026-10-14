@@ -297,6 +297,13 @@ model AuditLog {
   @@index([createdAt])
 }
 
+/// Šifrovaný obsah dokladu (AES-256-GCM); kľúč je Document.storageKey.
+model StoredFile {
+  key       String   @id
+  data      Bytes
+  createdAt DateTime @default(now())
+}
+
 model EmailLog {
   id        String   @id @default(cuid())
   to        String

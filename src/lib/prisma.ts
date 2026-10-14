@@ -8,3 +8,11 @@ export function createPrismaClient() {
   });
   return new PrismaClient({ adapter });
 }
+
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+
+/** Jeden klient na proces (v dev režime prežije aj hot reload). */
+export function getPrisma() {
+  globalForPrisma.prisma ??= createPrismaClient();
+  return globalForPrisma.prisma;
+}

@@ -1,6 +1,4 @@
 import "dotenv/config";
-import { rm } from "node:fs/promises";
-import path from "node:path";
 import type {
   ApplicationStatus,
   DocumentStatus,
@@ -8,10 +6,10 @@ import type {
 } from "../src/generated/prisma/enums";
 import { generateSecret } from "otplib";
 import { aisRecordFor } from "../src/lib/ais";
-import { createPrismaClient } from "../src/lib/prisma";
+import { getPrisma } from "../src/lib/prisma";
 import { storeEncrypted } from "../src/lib/storage";
 
-const db = createPrismaClient();
+const db = getPrisma();
 
 // Deterministický generátor, aby seed dal vždy rovnaké dáta.
 let state = 20262027;
@@ -90,10 +88,7 @@ trailer<</Root 1 0 R>>
 
 async function main() {
   console.log("Čistím databázu…");
-  await rm(path.join(process.cwd(), "storage", "documents"), {
-    recursive: true,
-    force: true,
-  });
+  await db.storedFile.deleteMany();
   await db.auditLog.deleteMany();
   await db.emailLog.deleteMany();
   await db.allocation.deleteMany();

@@ -58,7 +58,7 @@ export function Select({ className, ...props }: ComponentProps<"select">) {
       className={cn(control, "h-10 appearance-none pr-9", className)}
       style={{
         backgroundImage:
-          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath stroke='%2363736e' stroke-width='1.6' d='m1 1.5 5 5 5-5'/%3E%3C/svg%3E\")",
+          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath stroke='%23536360' stroke-width='1.6' d='m1 1.5 5 5 5-5'/%3E%3C/svg%3E\")",
         backgroundRepeat: "no-repeat",
         backgroundPosition: "right 0.8rem center",
       }}
