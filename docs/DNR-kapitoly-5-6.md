@@ -78,7 +78,7 @@ Prototyp overuje oblasti, v ktorých sú najväčšie riziká návrhu:
 | Prog. jazyk a framework | TypeScript, Next.js 16 (App Router, Server Actions) | Frontend aj backend v jednom projekte, typová kontrola od databázy po formulár, serverové akcie zjednodušujú overovanie práv pri každej zmene. |
 | UI framework | React 19, Tailwind CSS 4, vlastné komponenty | Plná kontrola nad vzhľadom a prístupnosťou, žiadna závislosť od šablóny. |
 | Databáza | SQLite / libSQL cez Prisma ORM 7 | Lokálne bez inštalácie servera, v produkcii Turso (libSQL). Transakcie pre kontrolu kapacity, migrácie, typovo bezpečné dotazy. |
-| Hosting | Vercel + Turso | Bezplatný tier, nasadenie priamo z GitHubu, denná úloha (cron) na mazanie dokladov. |
+| Hosting | VPS (Ubuntu 26.04), Caddy, systemd – https://swi.becode.sk | Citlivé doklady zostávajú na vlastnom serveri, automatické HTTPS cez Let's Encrypt, denná záloha databázy a mazanie dokladov. Pripravené je aj nasadenie na Vercel + Turso. |
 | Repozitár | GitHub (github.com/martinos133/SWI) | Spoločná práca tímu, história zmien po fázach. |
 | Vývojové prostredie (IDE) | Visual Studio Code, Claude Code | Podpora TypeScriptu a Tailwindu. |
 | Testovanie | Vitest (unit), Playwright (E2E), axe-core (prístupnosť) | Overenie výpočtu, stavov, celých tokov všetkých rolí a WCAG 2.2 AA. |
@@ -129,7 +129,8 @@ pre všetky štyri roly. Overené bolo:
 | Next.js 16 má predvolene zapnuté *Cache Components*, pri ktorých čítanie session mimo `<Suspense>` končí chybou buildu. Aplikácia je celá za prihlásením. | Cache Components sme vypli – statický shell by pri stránkach závislých od prihláseného používateľa nič neušetril. |
 | Najnovšia verzia Prisma bola iba 8 RC a s ňou prišli konflikty závislostí. | Pripli sme stabilnú Prisma 7.10 s adaptérom libSQL. |
 | Lokálne nebežal Docker ani PostgreSQL. | SQLite cez libSQL – nevyžaduje server a v produkcii ho nahradí Turso bez zmeny kódu. |
-| Hosting Vercel nemá trvalý disk, doklady uložené do súborov by sa stratili. | Šifrovaný obsah dokladov ukladáme do databázy (entita StoredFile). |
+| Serverless hosting (Vercel) nemá trvalý disk, doklady uložené do súborov by sa stratili. | Šifrovaný obsah dokladov ukladáme do databázy (entita StoredFile), aplikácia tak beží na VPS aj na serverless hostingu. |
+| Build Next.js na serveri s 2 GB RAM. | Na VPS sme pridali 2 GB swap; aplikácia samotná potrebuje asi 300 MB. |
 | Kapacita sa nesmie prekročiť ani vtedy, keď dvaja referenti potvrdia pridelenie súčasne. | Potvrdenie beží v jednej transakcii, ktorá výpočet „zaberie“ podmienenou aktualizáciou a pred každým pridelením znova spočíta obsadenosť. |
 | Úprava bodov po odvolaní by zmenila uložený výpočet a ten by sa už nedal zopakovať. | Úprava sa ukladá k odvolaniu a do auditu, pôvodný výpočet zostáva nezmenený. |
 | Automatická kontrola prístupnosti (axe) našla nedostatočný kontrast šedého textu (4,4 : 1) a niektorých odznakov. | Upravili sme farebné tokeny na pomer aspoň 4,5 : 1; kontrola je súčasťou E2E testov. |

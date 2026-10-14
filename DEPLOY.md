@@ -1,4 +1,47 @@
-# Nasadenie (Vercel + Turso)
+# Nasadenie
+
+Produkcia beží na VPS (Eternyx, Ubuntu 26.04, 2 GB RAM):
+
+- **https://swi.becode.sk** – po nasmerovaní DNS záznamu A `swi` na `5.22.158.143` (Cloudflare, *DNS only*)
+- **https://5-22-158-143.sslip.io** – funguje hneď, bez úpravy DNS
+
+Aplikácia beží ako služba `ubytovanie` (Next.js na 127.0.0.1:3000), pred ňou je Caddy
+s automatickým HTTPS (Let's Encrypt). Databáza aj šifrované doklady sú v SQLite
+`/var/lib/ubytovanie/app.db`, tajné kľúče v `/opt/ubytovanie/.env`.
+
+## Nasadenie novej verzie
+
+Z koreňa repozitára na Macu (s SSH kľúčom pridaným v Eternyxe):
+
+```bash
+./deploy/deploy.sh
+```
+
+Skript skopíruje zdrojáky cez `rsync`, na serveri spustí `npm ci`, migrácie, build a reštart.
+`./deploy/deploy.sh --seed` navyše **prepíše databázu** ukážkovými dátami (napr. pred prezentáciou).
+
+## Príprava nového servera
+
+```bash
+ssh root@IP 'bash -s' < deploy/server-setup.sh
+```
+
+Nainštaluje Node.js 24, Caddy, 2 GB swap, firewall (SSH, 80, 443), systemd službu,
+vygeneruje tajné kľúče a nastaví denné úlohy: mazanie dokladov po uplynutí doby
+uchovávania (03:00) a zálohu databázy do `/var/backups/ubytovanie` (14 dní).
+
+## Užitočné príkazy na serveri
+
+```bash
+systemctl status ubytovanie        # stav aplikácie
+journalctl -u ubytovanie -f        # logy aplikácie
+journalctl -u caddy -f             # logy webového servera a certifikátov
+ls /var/backups/ubytovanie         # zálohy databázy
+```
+
+---
+
+## Alternatíva: Vercel + Turso
 
 Aplikácia nepotrebuje disk – databáza aj šifrované doklady sú v libSQL, takže beží na
 serverless hostingu. Kroky, ktoré vyžadujú prihlásenie do tvojich účtov:

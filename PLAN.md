@@ -16,7 +16,7 @@ Won't (SW.01–SW.12) sa zámerne nerobí.
 | E-mail | Nodemailer (SMTP / výpis do konzoly) | Rozhranie API.03, každý e-mail sa loguje |
 | Doklady | Šifrované AES-256-GCM v databáze | S.12, GDPR (E.04), funguje aj bez disku |
 | Testy | Vitest, Playwright, axe-core | Výpočet poradia, stavy, celé toky rolí, WCAG 2.2 AA |
-| Hosting | Vercel + Turso | Bezplatný tier, nasadenie z GitHubu |
+| Hosting | VPS (Eternyx), Caddy, systemd | https://swi.becode.sk, HTTPS cez Let's Encrypt, zálohy |
 | Repozitár / IDE | GitHub, VS Code | |
 
 ## Fázy
@@ -31,7 +31,7 @@ Won't (SW.01–SW.12) sa zámerne nerobí.
 - [x] **7. Odvolania** – podanie s prílohou, rozhodnutie komisie
 - [x] **8. Prierezové** – auditný záznam, e-maily, retencia dokladov
 - [x] **9. Kvalita** – testy, prístupnosť, mobil
-- [x] **10. Nasadenie** – príprava pre Vercel + Turso (DEPLOY.md), screenshoty a kapitoly 5 a 6 DNR
+- [x] **10. Nasadenie** – VPS s Caddy a HTTPS (DEPLOY.md), screenshoty a kapitoly 5 a 6 DNR
 
 ## Stavový automat žiadosti (E.09)
 

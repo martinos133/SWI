@@ -78,4 +78,4 @@ src/lib/
 
 - [docs/DNR-kapitoly-5-6.md](docs/DNR-kapitoly-5-6.md) – dátový model a prototyp pre dokument DNR
 - [docs/screenshots](docs/screenshots) – ER diagram a screenshoty
-- [DEPLOY.md](DEPLOY.md) – nasadenie na Vercel a Turso
+- [DEPLOY.md](DEPLOY.md) – nasadenie na VPS (produkcia: https://swi.becode.sk)
