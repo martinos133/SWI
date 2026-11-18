@@ -1,11 +1,11 @@
-import { Wordmark } from "@/components/logo";
+import { BrandBar } from "@/components/brand-bar";
 import { ButtonLink } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b border-line bg-surface px-4 py-3 sm:px-6">
-        <Wordmark />
+      <header>
+        <BrandBar href="/" />
       </header>
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-4 py-16 sm:px-6">
         <p className="text-sm font-semibold text-muted">Chyba 404</p>

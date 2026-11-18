@@ -9,32 +9,30 @@ export function NavLinks({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Hlavná navigácia" className="-mb-px flex gap-1 overflow-x-auto">
-      {items.map((item) => {
-        const active = item.exact
-          ? pathname === item.href
-          : pathname === item.href || pathname.startsWith(`${item.href}/`);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-current={active ? "page" : undefined}
-            className={clsx(
-              "relative shrink-0 px-3 py-4 text-sm font-medium whitespace-nowrap transition-colors",
-              active ? "text-ink" : "text-muted hover:text-ink",
-            )}
-          >
-            {item.label}
-            <span
-              aria-hidden
-              className={clsx(
-                "absolute inset-x-3 bottom-0 h-0.5 transition-colors",
-                active ? "bg-pine" : "bg-transparent",
-              )}
-            />
-          </Link>
-        );
-      })}
+    <nav aria-label="Hlavná navigácia" className="-mx-3 -mb-px overflow-x-auto">
+      <ul className="flex">
+        {items.map((item) => {
+          const active = item.exact
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(`${item.href}/`);
+          return (
+            <li key={item.href} className="shrink-0">
+              <Link
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={clsx(
+                  "flex h-12 items-center border-b-2 px-3 text-sm font-medium whitespace-nowrap transition-colors",
+                  active
+                    ? "border-pine text-pine"
+                    : "border-transparent text-ink-soft hover:border-line-strong hover:text-ink",
+                )}
+              >
+                {item.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </nav>
   );
 }

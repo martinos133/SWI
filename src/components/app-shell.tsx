@@ -1,10 +1,8 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { signOut } from "@/app/login/actions";
 import type { CurrentUser } from "@/lib/auth";
 import { NAV, ROLE_HOME, ROLE_LABEL } from "@/lib/roles";
-import { buttonClass } from "./ui/button";
-import { Wordmark } from "./logo";
+import { BrandBar } from "./brand-bar";
 import { NavLinks } from "./nav-links";
 
 export function AppShell({ user, children }: { user: CurrentUser; children: ReactNode }) {
@@ -23,38 +21,38 @@ export function AppShell({ user, children }: { user: CurrentUser; children: Reac
       >
         Preskočiť na obsah
       </a>
-      <header className="sticky top-0 z-30 border-b border-line bg-surface">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 px-4 sm:px-6">
-          <Link href={ROLE_HOME[user.role]} className="py-3" aria-label="Ubytovanie – domov">
-            <Wordmark />
-          </Link>
-
-          <div className="order-last -mx-4 w-[calc(100%+2rem)] border-t border-line px-3 sm:-mx-6 sm:w-[calc(100%+3rem)] sm:px-5 lg:order-none lg:mx-0 lg:w-auto lg:flex-1 lg:border-0 lg:px-0">
-            <NavLinks items={NAV[user.role]} />
+      <header>
+        <BrandBar href={ROLE_HOME[user.role]}>
+          <div className="hidden text-right leading-tight sm:block">
+            <p className="text-sm font-semibold">{user.name}</p>
+            <p className="text-xs text-white/75">{ROLE_LABEL[user.role]}</p>
           </div>
-
-          <div className="ml-auto flex items-center gap-3 py-2.5">
-            <div className="hidden text-right leading-tight xl:block">
-              <p className="text-sm font-semibold">{user.name}</p>
-              <p className="text-xs text-muted">{ROLE_LABEL[user.role]}</p>
-            </div>
-            <span
-              title={`${user.name}, ${ROLE_LABEL[user.role]}`}
-              className="grid size-8 place-items-center rounded-full bg-pine text-[0.8125rem] font-semibold text-white"
-            >
-              <span aria-hidden>{initials}</span>
-              <span className="sr-only xl:hidden">
-                {user.name}, {ROLE_LABEL[user.role]}
-              </span>
+          <span
+            title={`${user.name}, ${ROLE_LABEL[user.role]}`}
+            className="grid size-8 place-items-center rounded-full border border-white/30 bg-white/10 text-[0.8125rem] font-semibold sm:hidden"
+          >
+            <span aria-hidden>{initials}</span>
+            <span className="sr-only">
+              {user.name}, {ROLE_LABEL[user.role]}
             </span>
-            <form action={signOut}>
-              <button
-                type="submit"
-                className={buttonClass({ variant: "ghost", size: "sm" })}
-              >
-                Odhlásiť
-              </button>
-            </form>
+          </span>
+          <span aria-hidden className="hidden h-8 w-px bg-white/20 sm:block" />
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="inline-flex h-8 items-center gap-1.5 rounded-field border border-white/30 px-3 text-sm font-medium text-white transition-colors hover:border-white/60 hover:bg-white/10"
+            >
+              <svg viewBox="0 0 16 16" aria-hidden className="size-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2.75H3.75a1 1 0 0 0-1 1v8.5a1 1 0 0 0 1 1H6M10.5 11l3-3-3-3M13.25 8H6.5" />
+              </svg>
+              Odhlásiť
+            </button>
+          </form>
+        </BrandBar>
+
+        <div className="border-b border-line bg-surface">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <NavLinks items={NAV[user.role]} />
           </div>
         </div>
       </header>

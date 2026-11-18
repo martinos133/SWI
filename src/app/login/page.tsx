@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Wordmark } from "@/components/logo";
+import { BrandBar } from "@/components/brand-bar";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -42,10 +42,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b border-line bg-surface">
-        <div className="mx-auto flex max-w-5xl items-center px-4 py-3 sm:px-6">
-          <Wordmark />
-        </div>
+      <header>
+        <BrandBar className="max-w-5xl" />
       </header>
 
       <main className="mx-auto grid w-full max-w-5xl flex-1 content-start gap-8 px-4 py-8 sm:px-6 sm:py-14 lg:grid-cols-[1fr_24rem] lg:gap-12">

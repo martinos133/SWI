@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { generate } from "otplib";
-import { Wordmark } from "@/components/logo";
+import { BrandBar } from "@/components/brand-bar";
 import { buttonClass } from "@/components/ui/button";
 import { ROLE_HOME } from "@/lib/roles";
 import { getSession } from "@/lib/session";
@@ -23,10 +23,8 @@ export default async function SecondFactorPage() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b border-line bg-surface">
-        <div className="mx-auto flex max-w-5xl items-center px-4 py-3 sm:px-6">
-          <Wordmark />
-        </div>
+      <header>
+        <BrandBar className="max-w-5xl" />
       </header>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-8 sm:py-14">
         <div className="rounded-panel border border-line bg-surface p-6 sm:p-7">
