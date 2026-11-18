@@ -17,8 +17,8 @@ v tomto repozitári.
 
 | Názov entity | Popis |
 |---|---|
-| **User** (Používateľ) | Osoba prihlásená univerzitným kontom. Rola určuje, čo v systéme vidí: študent, referent, ubytovacia komisia alebo správca internátov. Študent má prepojenie na akademický IS (aisId). Systém nevedie heslá (E.01), uchováva iba tajomstvo pre druhý faktor. |
-| **Session** (Relácia) | Prihlásenie používateľa. Platí až po overení druhým faktorom (S.07), eviduje počet neúspešných pokusov. |
+| **User** (Používateľ) | Osoba prihlásená univerzitným kontom. Rola určuje, čo v systéme vidí: študent, referent, ubytovacia komisia alebo správca internátov. Študent má prepojenie na akademický IS (aisId). Systém nevedie heslá (E.01), uchováva iba tajomstvo pre druhý faktor, počet nesprávnych kódov a prípadné dočasné zablokovanie konta (po 5 chybách na 15 minút). |
+| **Session** (Relácia) | Prihlásenie používateľa. Platí až po overení druhým faktorom (S.07). |
 | **Period** (Konanie) | Konanie pre jeden akademický rok s termínmi podávania, úprav a odvolaní (S.11) a dátumom schválenia kritérií komisiou (E.03). |
 | **Criterion** (Kritérium) | Merateľný údaj vstupujúci do výpočtu poradia (prospech, vzdialenosť bydliska, sociálna situácia, osobitné potreby) s váhou v bodoch. Súčet váh konania je 100. |
 | **Dorm** (Internát) | Ubytovacie zariadenie univerzity s adresou a skratkou. |
@@ -99,7 +99,7 @@ pre všetky štyri roly. Overené bolo:
   ak jeho preferovaný internát ešte nie je plný, a naopak (obrázok 24),
 - študent vidí iba vlastnú žiadosť a doklady, iný študent dostane pri pokuse o prístup k
   cudziemu dokladu chybu 403,
-- 13 unit testov a 18 end-to-end testov prechádza; záťažový test (50 súbežných používateľov, 30 s) spracoval 2 828 požiadaviek bez chyby, 99 % odpovedí do 1,0 s; každá obrazovka každej roly spĺňa
+- 19 unit testov a 19 end-to-end testov prechádza; záťažový test (50 súbežných používateľov, 30 s) spracoval 2 828 požiadaviek bez chyby, 99 % odpovedí do 1,0 s; každá obrazovka každej roly spĺňa
   WCAG 2.2 AA podľa automatickej kontroly axe a na šírke 375 px nemá vodorovný posun.
 
 **Screenshoty** (súbory v priečinku `docs/screenshots`):

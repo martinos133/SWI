@@ -46,12 +46,15 @@ Referent ho zobrazí prepnutím konania v časti *Termíny*.
 |---|---|
 | `npm run dev` | vývojový server |
 | `npm run build` | produkčný build |
-| `npm test` | unit testy (výpočet poradia, stavový automat, dátumy) |
+| `npm test` | unit testy (výpočet poradia, stavový automat, dátumy, blokovanie druhého faktora) |
 | `npm run test:e2e` | E2E testy v Playwright (Google Chrome) vrátane kontroly prístupnosti a mobilu |
 | `npm run screenshots` | screenshoty celého konania do `docs/screenshots` |
 | `npm run db:deploy` | migrácie na vzdialenú libSQL/Turso databázu |
 | `npm run db:seed` | znova naplní databázu ukážkovými dátami |
 | `npm run retencia` | zmaže doklady po uplynutí doby uchovávania |
+
+Pri každom pushi do `main` a v pull requestoch spúšťa GitHub Actions ([ci.yml](.github/workflows/ci.yml))
+lint, kontrolu typov, unit testy, audit produkčných závislostí a E2E testy.
 
 ## Štruktúra
 

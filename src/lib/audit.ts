@@ -24,7 +24,8 @@ export type AuditAction =
   | "KONANIE_AKTIVOVANE"
   | "KRITERIA_ZMENENE"
   | "KRITERIA_SCHVALENE"
-  | "KAPACITA_ZMENENA";
+  | "KAPACITA_ZMENENA"
+  | "PRIHLASENIE_ZABLOKOVANE";
 
 type Client = Prisma.TransactionClient | typeof db;
 
@@ -73,4 +74,5 @@ export const AUDIT_LABEL: Record<string, string> = {
   KRITERIA_ZMENENE: "Zmena kritérií",
   KRITERIA_SCHVALENE: "Kritériá schválené",
   KAPACITA_ZMENENA: "Zmena kapacity",
+  PRIHLASENIE_ZABLOKOVANE: "Konto dočasne zablokované po nesprávnych kódoch 2FA",
 };

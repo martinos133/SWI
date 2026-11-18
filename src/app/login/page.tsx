@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Wordmark } from "@/components/logo";
 import { ButtonLink } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
+import { minutesLabel, OTP_LOCK_MINUTES } from "@/lib/otp-lockout";
 import { getActivePeriod } from "@/lib/period";
 import { ROLE_HOME } from "@/lib/roles";
 import { getSession } from "@/lib/session";
@@ -98,7 +99,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
           {dovod === "pokusy" ? (
             <p role="alert" className="mt-6 rounded-field bg-bad-tint px-4 py-3 text-sm text-bad">
-              Kód ste zadali nesprávne priveľakrát. Prihláste sa znova.
+              Kód ste zadali nesprávne priveľakrát. Konto je na {minutesLabel(OTP_LOCK_MINUTES)} zablokované.
             </p>
           ) : null}
 

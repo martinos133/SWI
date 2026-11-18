@@ -150,3 +150,40 @@ test("náhradník sa odvolá a komisia rozhodne", async ({ page }) => {
   await page.goto("/audit?typ=odvolania");
   await expect(page.getByText("Rozhodnutie o odvolaní").first()).toBeVisible();
 });
+
+test("opakovane nesprávny kód 2FA zablokuje konto aj pri novom prihlásení", async ({ page }) => {
+  // Konto, ktoré ostatné testy nepoužívajú – zablokovanie trvá do ďalšieho seedu.
+  const account = "kolesar22";
+  const ssoSignIn = async () => {
+    await page.context().clearCookies();
+    await page.goto("/sso");
+    await page.getByLabel("Používateľské meno").fill(account);
+    await page.getByRole("button", { name: "Prihlásiť", exact: true }).click();
+  };
+  // Po každom kóde počká na odpoveď servera, aby sa započítal každý pokus.
+  const wrongCode = async (expected?: string) => {
+    await page.getByLabel("Overovací kód").fill("000000");
+    await page.getByRole("button", { name: "Overiť a pokračovať" }).click();
+    if (expected) await expect(page.getByRole("alert").filter({ hasText: "Kód nesedí" })).toHaveText(expected);
+  };
+
+  await ssoSignIn();
+  await wrongCode("Kód nesedí. Zostávajú 4 pokusy.");
+  await wrongCode("Kód nesedí. Zostávajú 3 pokusy.");
+  await wrongCode("Kód nesedí. Zostávajú 2 pokusy.");
+
+  // Nové prihlásenie cez SSO pokusy nevynuluje.
+  await ssoSignIn();
+  await wrongCode("Kód nesedí. Zostávajú 1 pokus.");
+  await wrongCode();
+  await expect(page).toHaveURL("/login?dovod=pokusy");
+  await expect(page.getByText("Kód ste zadali nesprávne priveľakrát. Konto je na 15 minút zablokované.")).toBeVisible();
+
+  await ssoSignIn();
+  await expect(page.getByText(/dočasne zablokované/)).toBeVisible();
+  await expect(page).toHaveURL("/sso");
+
+  await login(page, "muha");
+  await page.goto("/audit?typ=prihlasenie");
+  await expect(page.getByText("Konto dočasne zablokované po nesprávnych kódoch 2FA").first()).toBeVisible();
+});

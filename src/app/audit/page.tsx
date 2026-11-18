@@ -21,6 +21,7 @@ const GROUPS: { key: string; label: string; actions: string[] | null }[] = [
   { key: "odvolania", label: "Odvolania", actions: ["ODVOLANIE_PODANE", "ODVOLANIE_ROZHODNUTE"] },
   { key: "ziadosti", label: "Žiadosti", actions: ["ZIADOST_PODANA", "ZIADOST_UPRAVENA", "ZIADOST_ZRUSENA", "STAV_ZMENENY"] },
   { key: "nastavenia", label: "Nastavenia", actions: ["TERMINY_ZMENENE", "KRITERIA_ZMENENE", "KRITERIA_SCHVALENE", "KAPACITA_ZMENENA"] },
+  { key: "prihlasenie", label: "Prihlásenie", actions: ["PRIHLASENIE_ZABLOKOVANE"] },
 ];
 
 export default async function AuditPage({ searchParams }: PageProps<"/audit">) {

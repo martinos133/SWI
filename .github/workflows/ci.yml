@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, typy a unit testy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test
+      # Zraniteľnosti v produkčných závislostiach od úrovne „high“ zastavia build.
+      - run: npm audit --omit=dev --audit-level=high
+
+  e2e:
+    name: E2E testy (Playwright)
+    needs: check
+    runs-on: ubuntu-latest
+    env:
+      # Iba pre testovaciu databázu v CI, nikde inde sa nepoužíva.
+      APP_SECRET: ci-e2e-secret-0123456789abcdefghijklmnop
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Testy používajú Google Chrome, ktorý je na ubuntu-latest predinštalovaný.
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7

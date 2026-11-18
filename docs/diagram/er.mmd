@@ -18,7 +18,7 @@ erDiagram
   RoomType ||--o{ Allocation : "miesto"
   Document ||--|| StoredFile : "obsah"
 
-  User { string login UK string role string aisId UK string totpSecret }
+  User { string login UK string role string aisId UK string totpSecret int otpFailures datetime otpLockedUntil }
   Period { string academicYear UK datetime submitTo datetime editTo datetime appealTo datetime criteriaApprovedAt }
   Criterion { string key int weight }
   Dorm { string code UK string name string address }
@@ -32,4 +32,4 @@ erDiagram
   Allocation { string applicationId UK }
   Appeal { string status float pointsAdjustment string decisionNote }
   AuditLog { string action string entityType string entityId string detail }
-  Session { bool verified int otpAttempts datetime expiresAt }
+  Session { bool verified datetime expiresAt }
