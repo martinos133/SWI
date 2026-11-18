@@ -82,4 +82,4 @@ src/lib/
 - [docs/architektura.md](docs/architektura.md) – technológie, rozsah a stavový automat
 - [docs/DNR-kapitoly-5-6.md](docs/DNR-kapitoly-5-6.md) – dátový model a prototyp pre dokument DNR
 - [docs/screenshots](docs/screenshots) – ER diagram a screenshoty
-- [DEPLOY.md](DEPLOY.md) – nasadenie na VPS (produkcia: https://swi.becode.sk)
+- [DEPLOY.md](DEPLOY.md) – nasadenie na server (produkcia: https://swi.becode.sk)

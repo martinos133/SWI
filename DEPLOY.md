@@ -1,42 +1,51 @@
 # Nasadenie
 
-Produkcia beží na VPS (Eternyx, Ubuntu 26.04, 2 GB RAM):
+Produkcia beží na **https://swi.becode.sk** – VPS Hetzner (Ubuntu 24.04, 2 GB RAM, `89.167.0.160`),
+DNS záznam A `swi` v Cloudflare (*DNS only*).
 
-- **https://swi.becode.sk** – po nasmerovaní DNS záznamu A `swi` na `5.22.158.143` (Cloudflare, *DNS only*)
-- **https://5-22-158-143.sslip.io** – funguje hneď, bez úpravy DNS
+Na serveri beží Dokploy s Traefikom a ďalšie aplikácie. SWI je samostatný Docker kontajner
+`swi` v sieti `dokploy-network` s obmedzenou pamäťou (384 MB), takže ostatnú prevádzku
+neovplyvní. Traefik ho sprístupňuje podľa súboru `/etc/dokploy/traefik/dynamic/swi.yml`
+a sám vybaví certifikát Let's Encrypt.
 
-Aplikácia beží ako služba `ubytovanie` (Next.js na 127.0.0.1:3000), pred ňou je Caddy
-s automatickým HTTPS (Let's Encrypt). Databáza aj šifrované doklady sú v SQLite
-`/var/lib/ubytovanie/app.db`, tajné kľúče v `/opt/ubytovanie/.env`.
+| Čo | Kde |
+|---|---|
+| SQLite databáza (aj šifrované doklady) | zväzok `swi-data` → `/data/app.db` v kontajneri |
+| Tajné kľúče (`APP_SECRET`, `CRON_SECRET`, …) | `/opt/swi/swi.env` |
+| Denná údržba 03:15 (mazanie dokladov, záloha) | `/opt/swi/daily.sh`, `/etc/cron.d/swi` |
+| Zálohy databázy (14 dní) | `/var/backups/swi` |
+
+Pri štarte kontajnera sa automaticky aplikujú chýbajúce migrácie (`scripts/apply-migrations.mts`).
 
 ## Nasadenie novej verzie
 
-Z koreňa repozitára (vyžaduje SSH kľúč pridaný na serveri):
+Z koreňa repozitára (vyžaduje Docker a SSH kľúč pridaný na serveri):
 
 ```bash
 ./deploy/deploy.sh
 ```
 
-Skript skopíruje zdrojové súbory cez `rsync`, na serveri spustí `npm ci`, migrácie, build a reštart.
-`./deploy/deploy.sh --seed` navyše **prepíše databázu** ukážkovými dátami (napr. pred prezentáciou).
+Skript zostaví image lokálne (server má málo pamäte na build), prenesie ho cez SSH
+a kontajner reštartuje. `./deploy/deploy.sh --seed` navyše **prepíše databázu** ukážkovými dátami.
 
 ## Príprava nového servera
+
+Server s Dokploy (Docker Swarm + Traefik) stačí raz pripraviť:
 
 ```bash
 ssh root@IP 'bash -s' < deploy/server-setup.sh
 ```
 
-Nainštaluje Node.js 24, Caddy, 2 GB swap, firewall (SSH, 80, 443), systemd službu,
-vygeneruje tajné kľúče a nastaví denné úlohy: mazanie dokladov po uplynutí doby
-uchovávania (03:00) a zálohu databázy do `/var/backups/ubytovanie` (14 dní).
+Vygeneruje tajné kľúče, vytvorí dátový zväzok, smerovanie v Traefiku a denné úlohy.
 
 ## Užitočné príkazy na serveri
 
 ```bash
-systemctl status ubytovanie        # stav aplikácie
-journalctl -u ubytovanie -f        # logy aplikácie
-journalctl -u caddy -f             # logy webového servera a certifikátov
-ls /var/backups/ubytovanie         # zálohy databázy
+docker ps --filter name=swi          # stav aplikácie
+docker logs -f swi                   # logy aplikácie
+docker stats --no-stream swi         # spotreba pamäte
+cat /var/log/swi-daily.log           # výsledok dennej údržby
+ls /var/backups/swi                  # zálohy databázy
 ```
 
 ---
