@@ -147,7 +147,7 @@ async function main() {
     },
   });
 
-  // Pomocníci na históriu: auditný záznam a odoslané e-maily s dátumom v minulosti.
+  // Pomocné funkcie na vytvorenie histórie: auditné záznamy a e-maily so spätným dátumom.
   const log = (
     actorId: string | null,
     action: string,
@@ -330,7 +330,7 @@ async function main() {
 
     students.push({ id: student.id, aisId, name: student.name, email: student.email, index });
 
-    // Lucia (index 1) je čistý demo účet bez žiadosti.
+    // Konto s indexom 1 (Lucia Nováková) zostáva bez žiadosti na ukážku celého podania.
     if (index === 1) continue;
 
     const status: ApplicationStatus =

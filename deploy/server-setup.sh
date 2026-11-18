@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Jednorazová príprava servera (Ubuntu/Debian). Spúšťa sa z Macu:
+# Jednorazová príprava servera (Ubuntu/Debian). Spúšťa sa z vývojového počítača:
 #   ssh root@SERVER 'bash -s' < deploy/server-setup.sh
 set -euo pipefail
 

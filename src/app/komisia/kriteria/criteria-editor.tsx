@@ -18,7 +18,7 @@ type Criterion = {
   weight: number;
 };
 
-// Odtiene borovice pre podiely kritérií v pruhu.
+// Farby segmentov pruhu s podielmi kritérií (odtiene primárnej farby).
 const SHADES = ["bg-pine", "bg-[#2f6a5f]", "bg-[#5f978a]", "bg-[#9cc2b8]"];
 
 export function CriteriaEditor({

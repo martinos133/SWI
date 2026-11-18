@@ -2,7 +2,7 @@
 
 Webová aplikácia na podávanie a spracovanie žiadostí o ubytovanie na univerzitných
 internátoch. Návrh vychádza z dokumentu *Detailný návrh riešenia – Žiadosť o ubytovanie B*,
-plán a stav prác je v [PLAN.md](PLAN.md).
+architektúra a rozsah riešenia sú opísané v [docs/architektura.md](docs/architektura.md).
 
 ## Spustenie
 
@@ -76,6 +76,7 @@ src/lib/
 
 ## Dokumentácia
 
+- [docs/architektura.md](docs/architektura.md) – technológie, rozsah a stavový automat
 - [docs/DNR-kapitoly-5-6.md](docs/DNR-kapitoly-5-6.md) – dátový model a prototyp pre dokument DNR
 - [docs/screenshots](docs/screenshots) – ER diagram a screenshoty
 - [DEPLOY.md](DEPLOY.md) – nasadenie na VPS (produkcia: https://swi.becode.sk)

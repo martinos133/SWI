@@ -2,9 +2,9 @@ import clsx from "clsx";
 import type { ReactNode } from "react";
 
 /**
- * Kľúčenka – mosadzná visačka kľúča od izby.
- * Kým študent miesto nemá, visačka je prázdna (nevyrazená); po pridelení
- * sa "vyrazí" mosadzou s názvom internátu a typom izby.
+ * Kľúčenka – vizuálne zobrazenie stavu ubytovania v podobe visačky kľúča od izby.
+ * Kým študent nemá pridelené miesto, visačka je prázdna; po pridelení
+ * zobrazuje názov internátu a typ izby.
  */
 export function KeyTag({
   blank = false,
@@ -25,7 +25,7 @@ export function KeyTag({
     <figure
       className={clsx("animate-swing relative mx-auto w-full max-w-64", className)}
     >
-      {/* krúžok, na ktorom visí */}
+      {/* Krúžok kľúčenky */}
       <svg
         aria-hidden
         viewBox="0 0 60 60"
@@ -60,12 +60,12 @@ export function KeyTag({
             : "bg-[linear-gradient(165deg,#dcbd6c_0%,#c9a24b_48%,#b48d39_100%)] text-pine shadow-[0_18px_30px_-18px_rgba(15,46,42,0.55),inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-2px_0_rgba(140,107,31,0.35)]",
         )}
       >
-        {/* vyrazená diera */}
+        {/* Otvor na krúžok */}
         <span
           aria-hidden
           className="absolute left-1/2 top-[1.15rem] size-4 -translate-x-1/2 rounded-full bg-paper shadow-[inset_0_1.5px_2px_rgba(15,46,42,0.45)]"
         />
-        {/* gravírovaný okraj */}
+        {/* Vnútorný okraj visačky */}
         <span
           aria-hidden
           className={clsx(

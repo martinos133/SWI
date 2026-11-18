@@ -11,13 +11,13 @@ s automatickým HTTPS (Let's Encrypt). Databáza aj šifrované doklady sú v SQ
 
 ## Nasadenie novej verzie
 
-Z koreňa repozitára na Macu (s SSH kľúčom pridaným v Eternyxe):
+Z koreňa repozitára (vyžaduje SSH kľúč pridaný na serveri):
 
 ```bash
 ./deploy/deploy.sh
 ```
 
-Skript skopíruje zdrojáky cez `rsync`, na serveri spustí `npm ci`, migrácie, build a reštart.
+Skript skopíruje zdrojové súbory cez `rsync`, na serveri spustí `npm ci`, migrácie, build a reštart.
 `./deploy/deploy.sh --seed` navyše **prepíše databázu** ukážkovými dátami (napr. pred prezentáciou).
 
 ## Príprava nového servera

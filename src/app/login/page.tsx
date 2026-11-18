@@ -72,7 +72,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           </ol>
         ) : null}
 
-        {/* tichý odkaz na kľúčenku – obrys v rohu */}
+        {/* Dekoratívny obrys kľúčenky v pravom hornom rohu */}
         <svg
           aria-hidden
           viewBox="0 0 24 30"

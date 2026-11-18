@@ -10,9 +10,9 @@ cd "$(dirname "$0")/.."
 
 echo "==> Kopírujem zdrojové súbory na $SERVER"
 rsync -az --delete \
-  --exclude node_modules --exclude .next --exclude .git --exclude .env \
-  --exclude 'prisma/*.db' --exclude src/generated --exclude test-results \
-  --exclude playwright-report --exclude .claude --exclude docs/screenshots \
+  --exclude '/.*' --exclude node_modules --exclude 'prisma/*.db' \
+  --exclude src/generated --exclude test-results --exclude playwright-report \
+  --exclude docs/screenshots \
   ./ "$SERVER:$APP_DIR/"
 
 SEED=""
