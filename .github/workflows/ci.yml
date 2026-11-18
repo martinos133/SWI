@@ -9,18 +9,25 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # `prisma generate` pri `npm ci` vyžaduje adresu databázy, hoci sa k nej nepripája.
+  # E2E testy si ju pre server prepíšu na prisma/e2e.db (playwright.config.ts).
+  DATABASE_URL: file:./prisma/dev.db
+
 jobs:
   check:
     name: Lint, typy a unit testy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run lint
+      # Globálne typy PageProps/LayoutProps vznikajú až v .next/types.
+      - run: npx next typegen
       - run: npx tsc --noEmit
       - run: npm test
       # Zraniteľnosti v produkčných závislostiach od úrovne „high“ zastavia build.
@@ -35,15 +42,15 @@ jobs:
       APP_SECRET: ci-e2e-secret-0123456789abcdefghijklmnop
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
       - run: npm ci
       # Testy používajú Google Chrome, ktorý je na ubuntu-latest predinštalovaný.
       - run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: playwright-traces
