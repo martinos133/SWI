@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login } from "./helpers";
+import { expectAccessible, expectNoHorizontalScroll, login } from "./helpers";
 
 test.describe.configure({ mode: "serial" });
 
@@ -69,4 +69,49 @@ test("minulý akademický rok má overiteľný výpočet a nezaberá kapacitu", 
     .getByRole("button", { name: "Nastaviť ako aktívne" })
     .click();
   await expect(page.getByText(`Akademický rok ${active}.`)).toBeVisible();
+});
+
+test("termín sa dá vybrať z kalendára aj napísať", async ({ page }) => {
+  await login(page, "muha");
+  await page.goto("/referent/terminy");
+  const field = page.getByLabel("Koniec podávania", { exact: true });
+  const hidden = page.locator('input[type="hidden"][name="submitTo"]');
+  const original = await hidden.inputValue();
+
+  // Kalendár: otvorí sa na zvolenom dni, šípkami sa posunie o deň a týždeň.
+  await page.getByRole("button", { name: /^Vybrať dátum, zvolený .*januára 2027/ }).first().click();
+  const calendar = page.getByRole("dialog");
+  await expect(calendar.getByRole("grid")).toBeVisible();
+  await expect(calendar.getByRole("button", { pressed: true })).toBeFocused();
+  await expectAccessible(page);
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
+  await expect(calendar).toBeHidden();
+  const [y, m, d] = original.split("-").map(Number);
+  const picked = new Date(y, m - 1, d + 8);
+  await expect(field).toHaveValue(`${picked.getDate()}. ${picked.getMonth() + 1}. ${picked.getFullYear()}`);
+
+  // Mesiac sa dá prepnúť myšou a Escape kalendár zavrie bez zmeny.
+  await page.getByRole("button", { name: /^Vybrať dátum, zvolený .*2027/ }).nth(0).click();
+  await calendar.getByRole("button", { name: "Nasledujúci mesiac" }).click();
+  await expect(calendar.getByText("február 2027")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(calendar).toBeHidden();
+
+  // Písanie: platný dátum sa prevedie, neplatný sa označí ako chyba.
+  await field.fill("20.1.2027");
+  await field.blur();
+  await expect(field).toHaveValue("20. 1. 2027");
+  await expect(hidden).toHaveValue("2027-01-20");
+  await field.fill("31.2.2027");
+  await field.blur();
+  await expect(field).toHaveAttribute("aria-invalid", "true");
+
+  // Na mobile sa otvorený kalendár zmestí na obrazovku.
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.reload();
+  await page.getByRole("button", { name: /^Vybrať dátum/ }).first().click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expectNoHorizontalScroll(page);
 });

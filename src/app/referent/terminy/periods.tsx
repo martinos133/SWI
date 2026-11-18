@@ -4,6 +4,7 @@ import { useActionState, useState, useTransition } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DateInput } from "@/components/ui/date-input";
 import { Field, Input } from "@/components/ui/field";
 import { Section } from "@/components/ui/page-header";
 import { activatePeriod, createPeriod, type DeadlinesState } from "./actions";
@@ -99,16 +100,16 @@ export function Periods({ periods, defaults }: { periods: PeriodRow[]; defaults:
               <Input id="academicYear" name="academicYear" defaultValue={defaults.academicYear} required />
             </Field>
             <Field label="Začiatok podávania" htmlFor="new-submitFrom">
-              <Input id="new-submitFrom" name="submitFrom" type="date" defaultValue={defaults.submitFrom} required />
+              <DateInput id="new-submitFrom" name="submitFrom" defaultValue={defaults.submitFrom} required />
             </Field>
             <Field label="Koniec podávania" htmlFor="new-submitTo">
-              <Input id="new-submitTo" name="submitTo" type="date" defaultValue={defaults.submitTo} required />
+              <DateInput id="new-submitTo" name="submitTo" defaultValue={defaults.submitTo} required />
             </Field>
             <Field label="Koniec úprav" htmlFor="new-editTo">
-              <Input id="new-editTo" name="editTo" type="date" defaultValue={defaults.editTo} required />
+              <DateInput id="new-editTo" name="editTo" defaultValue={defaults.editTo} required />
             </Field>
             <Field label="Lehota na odvolania" htmlFor="new-appealTo">
-              <Input id="new-appealTo" name="appealTo" type="date" defaultValue={defaults.appealTo} required />
+              <DateInput id="new-appealTo" name="appealTo" defaultValue={defaults.appealTo} required />
             </Field>
           </div>
           {state?.error ? (

@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
-import { describedBy, Input } from "@/components/ui/field";
+import { DateInput } from "@/components/ui/date-input";
+import { describedBy } from "@/components/ui/field";
 import { saveDeadlines, type DeadlinesState } from "./actions";
 
 type Values = { submitFrom: string; submitTo: string; editTo: string; appealTo: string };
@@ -39,10 +40,9 @@ export function DeadlinesForm({ periodId, initial }: { periodId: string; initial
                 </p>
               </div>
             </div>
-            <Input
+            <DateInput
               id={row.name}
               name={row.name}
-              type="date"
               defaultValue={initial[row.name]}
               required
               aria-describedby={describedBy(row.name, { hint: row.hint })}

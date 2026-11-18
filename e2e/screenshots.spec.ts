@@ -49,6 +49,10 @@ test("screenshoty celého konania", async ({ page }) => {
   await shot(page, "10-referent-posudenie-dokladov", true);
   await page.goto("/referent/terminy");
   await shot(page, "11-referent-terminy");
+  await page.getByRole("button", { name: /^Vybrať dátum/ }).nth(1).click();
+  await page.getByRole("dialog").waitFor();
+  await shot(page, "23-vyber-datumu");
+  await page.keyboard.press("Escape");
 
   await login(page, "galova");
   await page.goto("/komisia/kriteria");

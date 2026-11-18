@@ -99,7 +99,7 @@ pre všetky štyri roly. Overené bolo:
   ak jeho preferovaný internát ešte nie je plný, a naopak (obrázok 24),
 - študent vidí iba vlastnú žiadosť a doklady, iný študent dostane pri pokuse o prístup k
   cudziemu dokladu chybu 403,
-- 19 unit testov a 19 end-to-end testov prechádza; záťažový test (50 súbežných používateľov, 30 s) spracoval 2 828 požiadaviek bez chyby, 99 % odpovedí do 1,0 s; každá obrazovka každej roly spĺňa
+- 19 unit testov a 20 end-to-end testov prechádza (výstup v docs/screenshots/24-vysledky-testov.png); záťažový test (50 súbežných používateľov, 30 s) spracoval 2 828 požiadaviek bez chyby, 99 % odpovedí do 1,0 s; každá obrazovka každej roly spĺňa
   WCAG 2.2 AA podľa automatickej kontroly axe a na šírke 375 px nemá vodorovný posun.
 
 **Screenshoty** (súbory v priečinku `docs/screenshots`):
@@ -114,7 +114,7 @@ pre všetky štyri roly. Overené bolo:
 | 18 | 08-doklady-vyzva-na-doplnenie.png | Doklady s poznámkou referenta (UC.03) |
 | 19 | 09-referent-zoznam-ziadosti.png | Zoznam žiadostí pre referenta |
 | 20 | 10-referent-posudenie-dokladov.png | Posúdenie dokladov a história žiadosti (UC.06) |
-| 21 | 11-referent-terminy.png | Správa termínov (UC.10) |
+| 21 | 11-referent-terminy.png, 23-vyber-datumu.png | Správa termínov a výber dátumu z kalendára (UC.10) |
 | 22 | 12-komisia-kriteria-a-vahy.png | Kritériá a váhy so simuláciou výpočtu (UC.10) |
 | 23 | 13-spravca-kapacity.png | Kapacity internátov (UC.10) |
 | 24 | 14-poradie-navrh-pridelenia.png, 15-potvrdenie-pridelenia.png | Výpočet poradia a potvrdenie pridelenia (UC.07) |
