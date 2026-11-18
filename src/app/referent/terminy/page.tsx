@@ -43,32 +43,34 @@ export default async function DeadlinesPage() {
         title="Termíny"
         description={`Akademický rok ${period.academicYear}. ${phase} Po termíne systém danú akciu študentom nedovolí.`}
       />
-      <DeadlinesForm
-        key={period.id}
-        periodId={period.id}
-        initial={{
-          submitFrom: toDateInput(period.submitFrom),
-          submitTo: toDateInput(period.submitTo),
-          editTo: toDateInput(period.editTo),
-          appealTo: toDateInput(period.appealTo),
-        }}
-      />
-      <Periods
-        periods={periods.map((p) => ({
-          id: p.id,
-          academicYear: p.academicYear,
-          range: `podávanie ${formatDate(p.submitFrom)} – ${formatDate(p.submitTo)}`,
-          isActive: p.isActive,
-          applications: p._count.applications,
-        }))}
-        defaults={{
-          academicYear: `${start + 1}/${String((start + 2) % 100).padStart(2, "0")}`,
-          submitFrom: nextYear(period.submitFrom),
-          submitTo: nextYear(period.submitTo),
-          editTo: nextYear(period.editTo),
-          appealTo: nextYear(period.appealTo),
-        }}
-      />
+      <div className="flex max-w-2xl flex-col gap-6">
+        <DeadlinesForm
+          key={period.id}
+          periodId={period.id}
+          initial={{
+            submitFrom: toDateInput(period.submitFrom),
+            submitTo: toDateInput(period.submitTo),
+            editTo: toDateInput(period.editTo),
+            appealTo: toDateInput(period.appealTo),
+          }}
+        />
+        <Periods
+          periods={periods.map((p) => ({
+            id: p.id,
+            academicYear: p.academicYear,
+            range: `podávanie ${formatDate(p.submitFrom)} – ${formatDate(p.submitTo)}`,
+            isActive: p.isActive,
+            applications: p._count.applications,
+          }))}
+          defaults={{
+            academicYear: `${start + 1}/${String((start + 2) % 100).padStart(2, "0")}`,
+            submitFrom: nextYear(period.submitFrom),
+            submitTo: nextYear(period.submitTo),
+            editTo: nextYear(period.editTo),
+            appealTo: nextYear(period.appealTo),
+          }}
+        />
+      </div>
     </>
   );
 }

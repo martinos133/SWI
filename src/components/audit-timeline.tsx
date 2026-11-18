@@ -53,11 +53,11 @@ export function AuditTimeline({ entries }: { entries: Entry[] }) {
           <li key={entry.id} className="relative">
             <span
               aria-hidden
-              className="absolute top-1.5 -left-[1.5625rem] size-2 rounded-full bg-line-strong ring-4 ring-paper"
+              className="absolute top-1.5 -left-[1.5625rem] size-2 rounded-full bg-line-hover"
             />
             <p className="text-sm font-semibold">{AUDIT_LABEL[entry.action] ?? entry.action}</p>
             {detail ? <p className="text-sm text-ink-soft">{detail}</p> : null}
-            <p className="mt-0.5 text-xs text-muted">
+            <p className="mt-0.5 text-[0.8125rem] text-muted tabular-nums">
               {formatDateTime(entry.createdAt)}, {entry.actor?.name ?? "systém"}
             </p>
           </li>

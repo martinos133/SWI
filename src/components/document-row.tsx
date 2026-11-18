@@ -1,5 +1,5 @@
-import clsx from "clsx";
 import type { Document } from "@/generated/prisma/client";
+import { cn } from "@/lib/cn";
 import { formatDateTime, formatFileSize } from "@/lib/format";
 import { DOCUMENT_STATUS } from "@/lib/status";
 import { Badge } from "./ui/badge";
@@ -8,16 +8,16 @@ export function DocumentRow({ doc, compact = false }: { doc: Document; compact?:
   const ext = doc.fileName.split(".").pop()?.toUpperCase().slice(0, 4) ?? "SÚBOR";
   return (
     <div
-      className={clsx(
+      className={cn(
         "flex items-center gap-3",
-        compact ? "" : "rounded-field bg-paper px-3.5 py-3",
+        !compact && "rounded-field border border-line bg-surface px-3.5 py-3",
       )}
     >
       <span
         aria-hidden
-        className={clsx(
-          "grid shrink-0 place-items-center rounded-[0.35rem] bg-surface font-bold text-muted ring-1 ring-line",
-          compact ? "h-7 w-6 text-[0.5rem]" : "h-10 w-8 text-[0.625rem]",
+        className={cn(
+          "grid shrink-0 place-items-center rounded-tag border border-line-strong bg-surface font-mono font-semibold text-ink-soft",
+          compact ? "h-7 w-8 text-[0.5625rem]" : "h-9 w-10 text-[0.625rem]",
         )}
       >
         {ext}
@@ -30,7 +30,7 @@ export function DocumentRow({ doc, compact = false }: { doc: Document; compact?:
             href={`/doklad/${doc.id}`}
             target="_blank"
             rel="noopener"
-            className="block truncate font-medium underline-offset-2 hover:underline"
+            className="block truncate font-medium text-pine underline decoration-pine/30 underline-offset-4 hover:decoration-pine"
           >
             {doc.fileName}
           </a>

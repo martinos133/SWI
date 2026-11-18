@@ -1,12 +1,12 @@
-import clsx from "clsx";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { KeyTag } from "@/components/key-tag";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/page-header";
+import { DataList, EmptyState, PageHeader, Section } from "@/components/ui/page-header";
+import { Table, TBody, TD, TH, THead } from "@/components/ui/table";
 import { applicationInclude, documentChecklist, type FullApplication } from "@/lib/applications";
 import { requireUser } from "@/lib/auth";
+import { cn } from "@/lib/cn";
 import { db } from "@/lib/db";
 import { daysUntil, formatDate, formatNumber, pluralDays } from "@/lib/format";
 import { getActivePeriod, windows } from "@/lib/period";
@@ -15,6 +15,9 @@ import { DOCUMENT_STATUS, DOCUMENT_TYPE, JOURNEY, STATUS } from "@/lib/status";
 import { StartApplicationButton } from "./start-button";
 
 export const metadata: Metadata = { title: "Prehľad" };
+
+const sectionLinkClass =
+  "text-sm font-medium text-pine underline decoration-pine/30 underline-offset-4 hover:decoration-pine";
 
 export default async function StudentDashboard() {
   const user = await requireUser(["STUDENT"]);
@@ -39,56 +42,64 @@ export default async function StudentDashboard() {
   if (!app) {
     const left = daysUntil(period.submitTo);
     return (
-      <div className="grid gap-16 lg:grid-cols-[1fr_16rem] lg:gap-20">
-        <div className="max-w-xl">
-          <p className="text-muted">Akademický rok {period.academicYear}</p>
-          <h1 className="mt-2 text-4xl font-extrabold tracking-[-0.03em] sm:text-5xl">
-            Dobrý deň, {firstName}.
-          </h1>
-          <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-            {w.canSubmit
+      <>
+        <PageHeader
+          meta={`Akademický rok ${period.academicYear}`}
+          title={`Dobrý deň, ${firstName}.`}
+          description={
+            w.canSubmit
               ? `Žiadosti o ubytovanie prijímame do ${formatDate(period.submitTo)}, zostáva ${pluralDays(left)}.`
               : w.beforeSubmit
                 ? `Podávanie žiadostí sa začne ${formatDate(period.submitFrom)}.`
-                : "Termín na podávanie žiadostí už uplynul."}
-          </p>
-
-          <ol className="mt-10 flex flex-col gap-6 border-l border-line pl-6">
-            {[
-              [
-                "Vyplníte žiadosť",
-                "Ročník, študijný program a prospech doplníme z akademického IS. Vy vyberiete internáty a typ izby.",
-              ],
-              [
-                "Nahráte doklady, ak ich potrebujete",
-                "Potvrdenie o príjme alebo zdravotný doklad, ak chcete, aby sme zohľadnili vašu situáciu.",
-              ],
-              [
-                "Sledujete stav",
-                "Kedykoľvek uvidíte, v akom stave je žiadosť, čo ešte chýba a po vyhodnotení aj svoje body.",
-              ],
-            ].map(([title, text], i) => (
-              <li key={title} className="relative">
-                <span className="absolute top-0.5 -left-[2.0625rem] grid size-5 place-items-center rounded-full bg-paper text-xs font-bold text-muted ring-1 ring-line-strong">
-                  {i + 1}
-                </span>
-                <p className="font-semibold">{title}</p>
-                <p className="mt-1 text-muted">{text}</p>
-              </li>
-            ))}
-          </ol>
-
-          {w.canSubmit ? <StartApplicationButton /> : null}
-        </div>
-
-        <KeyTag
-          blank
-          overline="Zatiaľ bez kľúča"
-          title="Žiadosť ste ešte nepodali"
-          figure="–"
-          className="mt-6 lg:mt-10"
+                : "Termín na podávanie žiadostí už uplynul."
+          }
         />
-      </div>
+
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <Section title="Ako podať žiadosť">
+            <ol className="flex flex-col gap-5">
+              {[
+                [
+                  "Vyplníte žiadosť",
+                  "Ročník, študijný program a prospech doplníme z akademického IS. Vy vyberiete internáty a typ izby.",
+                ],
+                [
+                  "Nahráte doklady, ak ich potrebujete",
+                  "Potvrdenie o príjme alebo zdravotný doklad, ak chcete, aby sme zohľadnili vašu situáciu.",
+                ],
+                [
+                  "Sledujete stav",
+                  "Kedykoľvek uvidíte, v akom stave je žiadosť, čo ešte chýba a po vyhodnotení aj svoje body.",
+                ],
+              ].map(([title, text], i) => (
+                <li key={title} className="flex gap-3">
+                  <span className="grid size-6 shrink-0 place-items-center rounded-full border border-line-strong text-xs font-semibold text-ink-soft tabular-nums">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-semibold">{title}</p>
+                    <p className="mt-0.5 text-muted">{text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            {w.canSubmit ? <StartApplicationButton /> : null}
+          </Section>
+
+          <Section title="Stav žiadosti" actions={<Badge>Nepodaná</Badge>}>
+            <p className="text-ink-soft">Žiadosť ste ešte nepodali.</p>
+            <DataList
+              columns={1}
+              className="mt-4"
+              items={[
+                { label: "Akademický rok", value: period.academicYear },
+                { label: "Termín podania", value: formatDate(period.submitTo) },
+              ]}
+            />
+          </Section>
+        </div>
+      </>
     );
   }
 
@@ -97,183 +108,204 @@ export default async function StudentDashboard() {
   const todo = buildTodo(app, checklist, w);
   const entry = await latestConfirmedEntry(app.id);
   const journeyIndex = JOURNEY.findIndex((s) => s.covers.includes(app.status));
+  const adjustment = app.appeals.reduce(
+    (sum, a) => sum + (a.status === "UZNANE" ? (a.pointsAdjustment ?? 0) : 0),
+    0,
+  );
 
   return (
-    <div className="grid gap-14 lg:grid-cols-[1fr_16rem] lg:gap-20">
-      <div className="min-w-0">
-        <p className="text-muted">Žiadosť o ubytovanie {period.academicYear}</p>
-        <h1 className="mt-2 text-4xl font-extrabold tracking-[-0.03em] sm:text-5xl">
-          {status.label}
-        </h1>
-        <p className="mt-3 max-w-xl text-lg leading-relaxed text-ink-soft">{status.forStudent}</p>
+    <>
+      <PageHeader
+        meta={`Žiadosť o ubytovanie ${period.academicYear}`}
+        title={status.label}
+        description={status.forStudent}
+      />
 
-        {todo.length > 0 ? (
-          <section aria-labelledby="todo" className="mt-10">
-            <h2 id="todo" className="text-lg font-bold">
-              Čo treba urobiť
-            </h2>
-            <ul className="mt-3 divide-y divide-line rounded-panel bg-surface ring-1 ring-line">
-              {todo.map((item) => (
-                <li
-                  key={item.title}
-                  className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="font-semibold">{item.title}</p>
-                    {item.detail ? <p className="mt-0.5 text-sm text-muted">{item.detail}</p> : null}
-                  </div>
-                  <ButtonLink href={item.href} size="sm" className="self-start sm:self-auto">
-                    {item.action}
-                  </ButtonLink>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-
-        {app.status !== "ZRUSENA" ? (
-          <section aria-labelledby="priebeh" className="mt-12">
-            <h2 id="priebeh" className="text-lg font-bold">
-              Priebeh konania
-            </h2>
-            <ol className="mt-4 grid gap-px overflow-hidden rounded-panel bg-line ring-1 ring-line sm:grid-cols-5">
-              {JOURNEY.map((step, i) => {
-                const state = i < journeyIndex ? "done" : i === journeyIndex ? "current" : "next";
-                return (
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="flex min-w-0 flex-col gap-6">
+          {todo.length > 0 ? (
+            <Section title="Čo treba urobiť" flush>
+              <ul className="divide-y divide-line">
+                {todo.map((item, i) => (
                   <li
-                    key={step.key}
-                    aria-current={state === "current" ? "step" : undefined}
-                    className={clsx(
-                      "flex items-center gap-3 px-4 py-3.5 sm:flex-col sm:items-start sm:gap-2",
-                      state === "current" ? "bg-pine text-white" : "bg-surface",
-                    )}
+                    key={item.title}
+                    className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <span
-                      className={clsx(
-                        "grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold",
-                        state === "done" && "bg-pine-tint text-pine",
-                        state === "current" && "bg-brass text-pine",
-                        state === "next" && "text-muted ring-1 ring-line-strong",
-                      )}
+                    <div className="min-w-0">
+                      <p className="font-semibold">{item.title}</p>
+                      {item.detail ? <p className="mt-0.5 text-sm text-muted">{item.detail}</p> : null}
+                    </div>
+                    <ButtonLink
+                      href={item.href}
+                      size="sm"
+                      variant={i === 0 ? "primary" : "secondary"}
+                      className="self-start sm:self-auto"
                     >
-                      {state === "done" ? (
-                        <svg viewBox="0 0 12 12" className="size-3" aria-label="hotovo">
-                          <path d="m2.5 6.2 2.3 2.3 4.7-5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-                        </svg>
-                      ) : (
-                        i + 1
-                      )}
-                    </span>
-                    <span
-                      className={clsx(
-                        "text-sm font-semibold",
-                        state === "next" && "text-muted",
-                      )}
-                    >
-                      {step.label}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
-          </section>
-        ) : null}
-
-        {entry ? (
-          <Points
-            entry={entry}
-            adjustment={app.appeals.reduce((sum, a) => sum + (a.status === "UZNANE" ? (a.pointsAdjustment ?? 0) : 0), 0)}
-          />
-        ) : null}
-
-        <section aria-labelledby="suhrn" className="mt-12 grid gap-8 sm:grid-cols-2">
-          <div>
-            <div className="flex items-baseline justify-between">
-              <h2 id="suhrn" className="text-lg font-bold">
-                Preferované internáty
-              </h2>
-              <Link href="/student/ziadost" className="text-sm font-medium text-muted underline underline-offset-2 hover:text-ink">
-                Žiadosť
-              </Link>
-            </div>
-            {app.preferences.length > 0 ? (
-              <ol className="mt-3 flex flex-col gap-2">
-                {app.preferences.map((p) => (
-                  <li key={p.id} className="flex items-baseline gap-3">
-                    <span className="w-4 text-sm text-muted">{p.rank}.</span>
-                    <span className="font-medium">{p.dorm.name}</span>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="mt-3 text-muted">Zatiaľ ste nevybrali žiadny internát.</p>
-            )}
-          </div>
-          <div>
-            <div className="flex items-baseline justify-between">
-              <h2 className="text-lg font-bold">Doklady</h2>
-              <Link href="/student/doklady" className="text-sm font-medium text-muted underline underline-offset-2 hover:text-ink">
-                Doklady
-              </Link>
-            </div>
-            {checklist.length > 0 ? (
-              <ul className="mt-3 flex flex-col gap-2.5">
-                {checklist.map((item) => (
-                  <li key={item.type} className="flex items-center justify-between gap-3">
-                    <span className="font-medium">{DOCUMENT_TYPE[item.type].label}</span>
-                    {item.state === "CHYBA" ? (
-                      <Badge tone="bad">Chýba</Badge>
-                    ) : (
-                      <Badge tone={DOCUMENT_STATUS[item.state].tone}>
-                        {DOCUMENT_STATUS[item.state].label}
-                      </Badge>
-                    )}
+                      {item.action}
+                    </ButtonLink>
                   </li>
                 ))}
               </ul>
-            ) : (
-              <p className="mt-3 text-muted">K žiadosti netreba prikladať doklady.</p>
-            )}
-          </div>
-        </section>
-      </div>
+            </Section>
+          ) : null}
 
-      <aside
-        className={
-          app.status === "PRIDELENA"
-            ? "order-first pt-6 lg:order-none lg:pt-10"
-            : "pt-2 lg:pt-10"
-        }
-      >
-        <div className="lg:sticky lg:top-28">
-          <StatusTag app={app} rank={entry?.rank ?? null} />
+          {app.status !== "ZRUSENA" ? (
+            <Section title="Priebeh konania" flush className="overflow-hidden">
+              <ol className="grid divide-y divide-line sm:grid-cols-5 sm:divide-x sm:divide-y-0">
+                {JOURNEY.map((step, i) => {
+                  const state = i < journeyIndex ? "done" : i === journeyIndex ? "current" : "next";
+                  return (
+                    <li
+                      key={step.key}
+                      aria-current={state === "current" ? "step" : undefined}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3.5 sm:flex-col sm:items-start sm:gap-2",
+                        state === "current" && "bg-pine-tint",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "grid size-6 shrink-0 place-items-center rounded-full border text-xs font-semibold tabular-nums",
+                          state === "done" && "border-pine bg-surface text-pine",
+                          state === "current" && "border-pine bg-pine text-white",
+                          state === "next" && "border-line-strong text-muted",
+                        )}
+                      >
+                        {state === "done" ? (
+                          <svg viewBox="0 0 12 12" className="size-3" role="img" aria-label="hotovo">
+                            <path d="m2.5 6.2 2.3 2.3 4.7-5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+                          </svg>
+                        ) : (
+                          i + 1
+                        )}
+                      </span>
+                      <span className={cn("text-sm font-semibold", state === "next" && "font-medium text-muted")}>
+                        {step.label}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ol>
+            </Section>
+          ) : null}
+
+          {entry ? <Points entry={entry} adjustment={adjustment} /> : null}
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Section
+              title="Preferované internáty"
+              actions={
+                <Link href="/student/ziadost" className={sectionLinkClass}>
+                  Žiadosť
+                </Link>
+              }
+            >
+              {app.preferences.length > 0 ? (
+                <ol className="flex flex-col gap-2">
+                  {app.preferences.map((p) => (
+                    <li key={p.id} className="flex items-baseline gap-3">
+                      <span className="w-4 text-sm text-muted tabular-nums">{p.rank}.</span>
+                      <span className="font-medium">{p.dorm.name}</span>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-muted">Zatiaľ ste nevybrali žiadny internát.</p>
+              )}
+            </Section>
+
+            <Section
+              title="Doklady"
+              actions={
+                <Link href="/student/doklady" className={sectionLinkClass}>
+                  Doklady
+                </Link>
+              }
+            >
+              {checklist.length > 0 ? (
+                <ul className="flex flex-col gap-2.5">
+                  {checklist.map((item) => (
+                    <li key={item.type} className="flex items-center justify-between gap-3">
+                      <span className="min-w-0 font-medium">{DOCUMENT_TYPE[item.type].label}</span>
+                      {item.state === "CHYBA" ? (
+                        <Badge tone="bad">Chýba</Badge>
+                      ) : (
+                        <Badge tone={DOCUMENT_STATUS[item.state].tone}>
+                          {DOCUMENT_STATUS[item.state].label}
+                        </Badge>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted">K žiadosti netreba prikladať doklady.</p>
+              )}
+            </Section>
+          </div>
         </div>
-      </aside>
-    </div>
+
+        <aside
+          aria-label="Súhrn žiadosti"
+          className={cn("lg:sticky lg:top-28", app.status === "PRIDELENA" && "order-first lg:order-none")}
+        >
+          <StatusSummary
+            app={app}
+            rank={entry?.rank ?? null}
+            points={entry ? entry.points + adjustment : null}
+          />
+        </aside>
+      </div>
+    </>
   );
 }
 
-function StatusTag({ app, rank }: { app: FullApplication; rank: number | null }) {
+/** Súhrn stavu žiadosti v bočnom paneli: štítok stavu, kľúčové údaje a vysvetlenie. */
+function StatusSummary({
+  app,
+  rank,
+  points,
+}: {
+  app: FullApplication;
+  rank: number | null;
+  points: number | null;
+}) {
+  const status = STATUS[app.status];
+  const badge = <Badge tone={status.tone}>{status.label}</Badge>;
+  const ranking = [
+    ...(rank ? [{ label: "Poradie", value: `${rank}. miesto` }] : []),
+    ...(points !== null ? [{ label: "Body", value: formatNumber(points) }] : []),
+  ];
+
   if (app.status === "PRIDELENA" && app.allocation) {
     const { roomType } = app.allocation;
     return (
-      <KeyTag
-        overline="Pridelené miesto"
-        title={`Internát ${roomType.dorm.name}`}
-        figure={roomType.dorm.code}
-        detail={`${roomType.label}, akademický rok ${app.period.academicYear}`}
-      />
+      <Section title="Pridelené miesto" actions={badge}>
+        <DataList
+          columns={1}
+          items={[
+            { label: "Internát", value: `${roomType.dorm.name} (${roomType.dorm.code})` },
+            { label: "Adresa", value: roomType.dorm.address },
+            { label: "Typ izby", value: roomType.label },
+            { label: "Akademický rok", value: app.period.academicYear },
+            ...ranking,
+          ]}
+        />
+      </Section>
     );
   }
-  const status = STATUS[app.status];
+
   return (
-    <KeyTag
-      blank
-      overline="Zatiaľ bez kľúča"
-      title={status.label}
-      figure={rank ? `${rank}.` : "–"}
-      detail={rank ? "miesto v poradí" : "Poradie uvidíte po vyhodnotení."}
-    />
+    <Section title="Stav žiadosti" actions={badge}>
+      <DataList
+        columns={1}
+        items={[
+          { label: "Akademický rok", value: app.period.academicYear },
+          { label: "Dátum podania", value: app.submittedAt ? formatDate(app.submittedAt) : "–" },
+          ...ranking,
+        ]}
+      />
+      {rank ? null : <p className="mt-4 text-sm text-muted">Poradie uvidíte po vyhodnotení.</p>}
+    </Section>
   );
 }
 
@@ -340,56 +372,48 @@ function Points({
   adjustment: number;
 }) {
   return (
-    <section aria-labelledby="body" className="mt-12">
-      <div className="flex items-baseline justify-between">
-        <h2 id="body" className="text-lg font-bold">
-          Vaše body
-        </h2>
-        <p className="text-sm text-muted">
-          {entry.rank}. miesto v poradí
-        </p>
-      </div>
-      <table className="mt-3 w-full overflow-hidden rounded-panel bg-surface text-left ring-1 ring-line">
-        <thead className="border-b border-line text-sm text-muted">
+    <Section title="Vaše body" description={`${entry.rank}. miesto v poradí`} flush>
+      <Table minWidth="18rem" bordered={false}>
+        <THead>
           <tr>
-            <th className="px-5 py-2.5 font-medium">Kritérium</th>
-            <th className="px-5 py-2.5 text-right font-medium">Váha</th>
-            <th className="px-5 py-2.5 text-right font-medium">Body</th>
+            <TH>Kritérium</TH>
+            <TH align="right">Váha</TH>
+            <TH align="right">Body</TH>
           </tr>
-        </thead>
-        <tbody className="divide-y divide-line">
+        </THead>
+        <TBody>
           {entry.criteria.map((c) => (
             <tr key={c.key}>
-              <td className="px-5 py-3">{c.name}</td>
-              <td className="px-5 py-3 text-right text-muted">{c.weight}</td>
-              <td className="px-5 py-3 text-right font-semibold">
+              <TD>{c.name}</TD>
+              <TD align="right" className="text-muted">
+                {c.weight}
+              </TD>
+              <TD align="right" className="font-medium">
                 {formatNumber(entry.breakdown[c.key]?.points ?? 0)}
-              </td>
+              </TD>
             </tr>
           ))}
           {adjustment ? (
             <tr>
-              <td className="px-5 py-3" colSpan={2}>
-                Úprava po odvolaní
-              </td>
-              <td className="px-5 py-3 text-right font-semibold">
+              <TD colSpan={2}>Úprava po odvolaní</TD>
+              <TD align="right" className="font-medium">
                 {adjustment > 0 ? "+" : ""}
                 {formatNumber(adjustment)}
-              </td>
+              </TD>
             </tr>
           ) : null}
-        </tbody>
+        </TBody>
         <tfoot className="border-t border-line-strong">
           <tr>
-            <td className="px-5 py-3 font-bold" colSpan={2}>
+            <TD colSpan={2} className="font-semibold">
               Spolu
-            </td>
-            <td className="px-5 py-3 text-right text-lg font-extrabold">
+            </TD>
+            <TD align="right" className="font-semibold">
               {formatNumber(entry.points + adjustment)}
-            </td>
+            </TD>
           </tr>
         </tfoot>
-      </table>
-    </section>
+      </Table>
+    </Section>
   );
 }

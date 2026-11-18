@@ -1,10 +1,12 @@
 "use client";
 
-import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Textarea } from "@/components/ui/field";
+import { ChoiceCard, describedBy, Field, Input, Textarea } from "@/components/ui/field";
+import { Card, DataList, EmptyState, Section } from "@/components/ui/page-header";
+import { cn } from "@/lib/cn";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import {
   cancelApplication,
@@ -111,38 +113,41 @@ export function ApplicationForm(props: Props) {
   const available = dorms.filter((d) => !draft.preferences.includes(d.id));
 
   return (
-    <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_19rem]">
-      <div className="flex min-w-0 flex-col gap-12">
-        <FormSection
+    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
+      <div className="flex min-w-0 flex-col gap-6">
+        <Section
           title="Údaje z akademického IS"
           description="Tieto údaje nemeníte. Ak nesedia, obráťte sa na študijné oddelenie fakulty."
         >
-          <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
-            <Fact label="Študijný program" value={props.ais.program} />
-            <Fact label="Fakulta" value={props.ais.faculty} />
-            <Fact label="Ročník" value={props.ais.year ? `${props.ais.year}.` : null} />
-            <Fact label="Vážený študijný priemer" value={formatNumber(props.ais.gpa)} />
-            <Fact
-              label="Vzdialenosť trvalého bydliska"
-              value={props.ais.distanceKm != null ? `${props.ais.distanceKm} km` : null}
-            />
-          </dl>
-          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted">
+          <DataList
+            items={[
+              { label: "Študijný program", value: props.ais.program ?? "–" },
+              { label: "Fakulta", value: props.ais.faculty ?? "–" },
+              { label: "Ročník", value: props.ais.year ? `${props.ais.year}.` : "–" },
+              { label: "Vážený študijný priemer", value: formatNumber(props.ais.gpa) },
+              {
+                label: "Vzdialenosť trvalého bydliska",
+                value: props.ais.distanceKm != null ? `${props.ais.distanceKm} km` : "–",
+              },
+            ]}
+          />
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line pt-4 text-sm text-muted">
             <span>Načítané {formatDateTime(props.ais.syncedAt)}</span>
             {editable ? (
-              <button
+              <Button
                 type="button"
+                variant="link"
+                size="sm"
                 disabled={pending}
                 onClick={() => startTransition(async () => void (await refreshFromAis(), router.refresh()))}
-                className="font-medium text-ink underline underline-offset-2 disabled:opacity-50"
               >
                 Načítať znova
-              </button>
+              </Button>
             ) : null}
           </div>
-        </FormSection>
+        </Section>
 
-        <FormSection title="Kontakt">
+        <Section title="Kontakt">
           <Field
             label="Telefón"
             htmlFor="phone"
@@ -156,20 +161,21 @@ export function ApplicationForm(props: Props) {
               placeholder="+421 900 123 456"
               value={draft.phone}
               disabled={!editable}
+              aria-describedby={describedBy("phone", { hint: true })}
               onChange={(e) => update("phone", e.target.value)}
             />
           </Field>
-        </FormSection>
+        </Section>
 
-        <FormSection
+        <Section
           title="Kde chcete bývať"
           description="Zoraďte internáty od najžiadanejšieho. Miesto dostanete v prvom, kde bude pre vás voľno."
         >
           {chosen.length > 0 ? (
-            <ol className="divide-y divide-line rounded-panel bg-surface ring-1 ring-line">
+            <ol className="divide-y divide-line rounded-panel border border-line">
               {chosen.map((dorm, i) => (
-                <li key={dorm.id} className="flex items-center gap-4 px-4 py-3">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-pine text-sm font-bold text-white">
+                <li key={dorm.id} className="flex items-center gap-3 px-3 py-2.5 sm:gap-4 sm:px-4">
+                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-pine text-sm font-semibold text-white tabular-nums">
                     {i + 1}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -177,7 +183,7 @@ export function ApplicationForm(props: Props) {
                     <p className="truncate text-sm text-muted">{dorm.address}</p>
                   </div>
                   {editable ? (
-                    <div className="flex shrink-0 items-center gap-1">
+                    <div className="flex shrink-0 items-center gap-0.5">
                       <IconButton label={`Posunúť ${dorm.name} vyššie`} disabled={i === 0} onClick={() => move(i, -1)}>
                         <path d="m4 10 4-4 4 4" />
                       </IconButton>
@@ -205,103 +211,97 @@ export function ApplicationForm(props: Props) {
               ))}
             </ol>
           ) : (
-            <p className="rounded-panel border border-dashed border-line-strong px-4 py-5 text-muted">
-              Zatiaľ ste nevybrali žiadny internát.
-            </p>
+            <EmptyState title="Zatiaľ ste nevybrali žiadny internát." />
           )}
           {editable && available.length > 0 ? (
-            <div className="mt-4">
-              <p className="text-sm font-semibold">Pridať internát</p>
-              <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-5">
+              <p id="add-dorm" className="text-sm font-semibold">
+                Pridať internát
+              </p>
+              <div role="group" aria-labelledby="add-dorm" className="mt-2 flex flex-wrap gap-2">
                 {available.map((dorm) => (
-                  <button
+                  <Button
                     key={dorm.id}
                     type="button"
+                    variant="secondary"
+                    size="sm"
                     onClick={() => update("preferences", [...draft.preferences, dorm.id])}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3.5 py-1.5 text-sm font-medium ring-1 ring-line-strong transition-colors hover:bg-pine-tint hover:ring-pine/40"
                   >
-                    <svg viewBox="0 0 16 16" className="size-3.5" aria-hidden>
+                    <svg viewBox="0 0 16 16" className="size-3.5 text-muted" aria-hidden>
                       <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                     </svg>
                     {dorm.name}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
           ) : null}
-        </FormSection>
+        </Section>
 
-        <FormSection title="Typ izby" description="Ak preferovaný typ nebude voľný, dostanete iný v tom istom internáte.">
-          <div role="radiogroup" aria-label="Typ izby" className="grid gap-2 sm:grid-cols-4">
-            {[...props.bedOptions, null].map((beds) => {
-              const checked = draft.preferredBeds === beds;
-              return (
-                <label
+        <Section title="Typ izby" description="Ak preferovaný typ nebude voľný, dostanete iný v tom istom internáte.">
+          <fieldset className="min-w-0">
+            <legend className="sr-only">Typ izby</legend>
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              {[...props.bedOptions, null].map((beds) => (
+                <ChoiceCard
                   key={beds ?? "any"}
-                  className={clsx(
-                    "flex cursor-pointer flex-col rounded-field px-4 py-3 ring-1 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-brass",
-                    checked ? "bg-pine-tint ring-2 ring-pine" : "bg-surface ring-line-strong hover:bg-sunken",
-                    !editable && "pointer-events-none opacity-60",
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name="beds"
-                    className="sr-only"
-                    checked={checked}
-                    disabled={!editable}
-                    onChange={() => update("preferredBeds", beds)}
-                  />
-                  <span className="font-semibold">{beds ? BEDS_LABEL[beds] : "Nezáleží mi"}</span>
-                  <span className="text-sm text-muted">{beds ? `${beds} ${beds === 1 ? "lôžko" : "lôžka"}` : "akákoľvek izba"}</span>
-                </label>
-              );
-            })}
-          </div>
-        </FormSection>
+                  name="beds"
+                  checked={draft.preferredBeds === beds}
+                  disabled={!editable}
+                  onChange={() => update("preferredBeds", beds)}
+                  label={beds ? BEDS_LABEL[beds] : "Nezáleží mi"}
+                  description={beds ? `${beds} ${beds === 1 ? "lôžko" : "lôžka"}` : "akákoľvek izba"}
+                />
+              ))}
+            </div>
+          </fieldset>
+        </Section>
 
-        <FormSection
+        <Section
           title="Osobitné okolnosti"
           description="Zohľadníme ich v poradí, ak ich doložíte. Doklady nahráte v časti Doklady."
         >
-          <div className="flex flex-col gap-3">
-            <Check
+          <div className="flex flex-col gap-2">
+            <ChoiceCard
+              type="checkbox"
               checked={draft.claimsSocial}
               disabled={!editable}
-              onChange={(v) => update("claimsSocial", v)}
-              title="Žiadam o zohľadnenie sociálnej situácie"
-              text="Priložíte potvrdenie o príjmoch domácnosti za minulý rok."
+              onChange={(e) => update("claimsSocial", e.target.checked)}
+              label="Žiadam o zohľadnenie sociálnej situácie"
+              description="Priložíte potvrdenie o príjmoch domácnosti za minulý rok."
             />
-            <Check
+            <ChoiceCard
+              type="checkbox"
               checked={draft.claimsHealth}
               disabled={!editable}
-              onChange={(v) => update("claimsHealth", v)}
-              title="Žiadam o zohľadnenie zdravotného stavu"
-              text="Priložíte lekársku správu alebo preukaz ŤZP. Doklad uvidí iba referent."
+              onChange={(e) => update("claimsHealth", e.target.checked)}
+              label="Žiadam o zohľadnenie zdravotného stavu"
+              description="Priložíte lekársku správu alebo preukaz ŤZP. Doklad uvidí iba referent."
             />
           </div>
-        </FormSection>
+        </Section>
 
-        <FormSection title="Poznámka pre ubytovacie oddelenie">
+        <Section title="Poznámka pre ubytovacie oddelenie">
           <Field label="Poznámka" htmlFor="note" hint="Nepovinné. Napríklad s kým by ste chceli bývať.">
             <Textarea
               id="note"
               maxLength={1000}
               value={draft.note}
               disabled={!editable}
+              aria-describedby={describedBy("note", { hint: true })}
               onChange={(e) => update("note", e.target.value)}
             />
           </Field>
-        </FormSection>
+        </Section>
       </div>
 
-      <aside className="lg:sticky lg:top-28">
-        <div className="rounded-panel bg-surface p-5 ring-1 ring-line">
+      <aside aria-label="Uloženie a podanie žiadosti" className="lg:sticky lg:top-28">
+        <Card>
           <SaveIndicator state={save} editable={editable} />
 
           {props.canSubmit ? (
             <>
-              <p className="mt-4 text-sm text-muted">
+              <p className="mt-3 text-sm text-muted">
                 Žiadosť zaradíme do poradia až po podaní. Termín je {props.submitTo}.
               </p>
               <Button
@@ -314,15 +314,15 @@ export function ApplicationForm(props: Props) {
               </Button>
             </>
           ) : props.submitted ? (
-            <p className="mt-4 text-sm text-muted">
+            <p className="mt-3 text-sm text-muted">
               Žiadosť je podaná. Zmeny, ktoré urobíte do termínu úprav, sa započítajú.
             </p>
           ) : null}
 
           {submitError ? (
-            <p role="alert" className="mt-3 rounded-field bg-bad-tint px-3 py-2.5 text-sm text-bad">
+            <Alert tone="bad" role="alert" className="mt-4">
               {submitError}
-            </p>
+            </Alert>
           ) : null}
 
           {editable ? (
@@ -331,7 +331,7 @@ export function ApplicationForm(props: Props) {
                 <div>
                   <p className="text-sm font-semibold">Naozaj zrušiť žiadosť?</p>
                   <p className="mt-1 text-sm text-muted">Zrušenú žiadosť už neobnovíte.</p>
-                  <div className="mt-3 flex gap-2">
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <Button
                       variant="danger"
                       size="sm"
@@ -340,53 +340,26 @@ export function ApplicationForm(props: Props) {
                     >
                       Zrušiť žiadosť
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setConfirmCancel(false)}>
+                    <Button variant="secondary" size="sm" onClick={() => setConfirmCancel(false)}>
                       Ponechať
                     </Button>
                   </div>
                 </div>
               ) : (
-                <button
+                <Button
                   type="button"
+                  variant="link"
+                  size="sm"
                   onClick={() => setConfirmCancel(true)}
-                  className="text-sm font-medium text-muted underline underline-offset-2 hover:text-bad"
+                  className="font-medium text-muted decoration-line-strong hover:text-bad hover:decoration-bad"
                 >
                   Zrušiť žiadosť
-                </button>
+                </Button>
               )}
             </div>
           ) : null}
-        </div>
+        </Card>
       </aside>
-    </div>
-  );
-}
-
-function FormSection({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description?: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="grid grid-cols-1 gap-4 border-t border-line pt-6 first:border-0 first:pt-0">
-      <div className="max-w-xl">
-        <h2 className="text-lg font-bold">{title}</h2>
-        {description ? <p className="mt-1 text-muted">{description}</p> : null}
-      </div>
-      <div>{children}</div>
-    </section>
-  );
-}
-
-function Fact({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div>
-      <dt className="text-sm text-muted">{label}</dt>
-      <dd className="mt-0.5 font-semibold">{value ?? "–"}</dd>
     </div>
   );
 }
@@ -409,7 +382,7 @@ function IconButton({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className="grid size-8 place-items-center rounded-field text-muted transition-colors hover:bg-sunken hover:text-ink disabled:opacity-30"
+      className="grid size-8 place-items-center rounded-field border border-transparent text-ink-soft transition-colors hover:border-line hover:bg-sunken hover:text-ink disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:border-transparent disabled:hover:bg-transparent"
     >
       <svg viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         {children}
@@ -418,58 +391,21 @@ function IconButton({
   );
 }
 
-function Check({
-  checked,
-  disabled,
-  onChange,
-  title,
-  text,
-}: {
-  checked: boolean;
-  disabled: boolean;
-  onChange: (v: boolean) => void;
-  title: string;
-  text: string;
-}) {
-  return (
-    <label
-      className={clsx(
-        "flex cursor-pointer gap-3 rounded-field bg-surface px-4 py-3.5 ring-1 transition-colors",
-        checked ? "ring-2 ring-pine" : "ring-line-strong hover:bg-sunken",
-        disabled && "pointer-events-none opacity-60",
-      )}
-    >
-      <input
-        type="checkbox"
-        checked={checked}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 size-4.5 shrink-0 accent-pine"
-      />
-      <span>
-        <span className="block font-semibold">{title}</span>
-        <span className="mt-0.5 block text-sm text-muted">{text}</span>
-      </span>
-    </label>
-  );
-}
-
 function SaveIndicator({ state, editable }: { state: SaveState; editable: boolean }) {
   if (!editable) {
     return <p className="text-sm font-semibold">Žiadosť je uzamknutá</p>;
   }
   const map = {
-    idle: { dot: "bg-line-strong", text: "Zmeny sa ukladajú automaticky" },
-    saving: { dot: "bg-wait animate-pulse", text: "Ukladám…" },
+    idle: { tone: "text-ink-soft", text: "Zmeny sa ukladajú automaticky" },
+    saving: { tone: "text-ink-soft", text: "Ukladám…" },
     saved: {
-      dot: "bg-ok",
+      tone: "text-ok",
       text: state.kind === "saved" ? `Uložené o ${state.at.toLocaleTimeString("sk-SK", { hour: "2-digit", minute: "2-digit" })}` : "",
     },
-    error: { dot: "bg-bad", text: state.kind === "error" ? state.message : "" },
+    error: { tone: "text-bad", text: state.kind === "error" ? state.message : "" },
   }[state.kind];
   return (
-    <p aria-live="polite" className="flex items-center gap-2 text-sm font-semibold">
-      <span aria-hidden className={clsx("size-2 rounded-full", map.dot)} />
+    <p aria-live="polite" className={cn("text-sm font-semibold", map.tone)}>
       {map.text}
     </p>
   );

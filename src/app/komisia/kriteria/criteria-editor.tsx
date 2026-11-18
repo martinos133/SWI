@@ -1,11 +1,13 @@
 "use client";
 
-import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Input, Textarea } from "@/components/ui/field";
+import { CheckField, Field, Input, Textarea } from "@/components/ui/field";
+import { Section } from "@/components/ui/page-header";
 import type { CriterionKey } from "@/generated/prisma/enums";
+import { cn } from "@/lib/cn";
 import { formatNumber } from "@/lib/format";
 import { MAX_DISTANCE_KM, score } from "@/lib/ranking";
 import { approveCriteria, saveCriteria } from "../actions";
@@ -48,57 +50,56 @@ export function CriteriaEditor({
       if (result.ok) router.refresh();
     });
 
+  const isApproved = Boolean(approved) && !dirty;
+
   return (
-    <div className="grid items-start gap-12 lg:grid-cols-[1fr_20rem]">
-      <div className="min-w-0">
-        <div
-          className={clsx(
-            "mb-8 flex flex-col gap-3 rounded-panel px-5 py-4 sm:flex-row sm:items-center sm:justify-between",
-            approved && !dirty ? "bg-ok-tint" : "bg-wait-tint",
-          )}
+    <div className="grid items-start gap-6 lg:grid-cols-[1fr_20rem]">
+      <div className="flex min-w-0 flex-col gap-6">
+        <Alert
+          tone={isApproved ? "ok" : "wait"}
+          title={isApproved ? "Kritériá sú schválené" : "Kritériá čakajú na schválenie"}
         >
-          <div>
-            <p className="font-semibold">
-              {approved && !dirty ? "Kritériá sú schválené" : "Kritériá čakajú na schválenie"}
-            </p>
-            <p className="text-sm text-ink-soft">
-              {approved && !dirty
-                ? approved
-                : dirty
-                  ? "Najprv uložte zmeny. Po uložení ich treba znova schváliť."
-                  : "Bez schválenia nemôže referent vypočítať poradie."}
-            </p>
-          </div>
+          <p>
+            {isApproved
+              ? approved
+              : dirty
+                ? "Najprv uložte zmeny. Po uložení ich treba znova schváliť."
+                : "Bez schválenia nemôže referent vypočítať poradie."}
+          </p>
           {!approved && !dirty ? (
             <Button
+              size="sm"
+              className="mt-3"
               disabled={pending || sum !== 100}
               onClick={() => run(() => approveCriteria(periodId), "Kritériá sú schválené.")}
             >
               Schváliť kritériá
             </Button>
           ) : null}
+        </Alert>
+
+        <div>
+          <div aria-hidden className="flex h-2.5 overflow-hidden rounded-field bg-sunken">
+            {criteria.map((c, i) => (
+              <span
+                key={c.id}
+                className={cn("h-full", SHADES[i % SHADES.length])}
+                style={{ width: `${Math.max(0, Math.min(100, c.weight || 0))}%` }}
+              />
+            ))}
+          </div>
+          <p className={cn("mt-2 text-sm font-semibold tabular-nums", sum === 100 ? "text-muted" : "text-bad")}>
+            Súčet váh {sum} zo 100
+          </p>
         </div>
 
-        <div aria-hidden className="flex h-3 overflow-hidden rounded-full bg-sunken">
+        <ul className="flex flex-col divide-y divide-line rounded-panel border border-line bg-surface">
           {criteria.map((c, i) => (
-            <span
-              key={c.id}
-              className={clsx("h-full transition-[width] duration-300", SHADES[i % SHADES.length])}
-              style={{ width: `${Math.max(0, Math.min(100, c.weight || 0))}%` }}
-            />
-          ))}
-        </div>
-        <p className={clsx("mt-2 text-sm font-semibold", sum === 100 ? "text-muted" : "text-bad")}>
-          Súčet váh {sum} zo 100
-        </p>
-
-        <ul className="mt-6 flex flex-col divide-y divide-line rounded-panel bg-surface ring-1 ring-line">
-          {criteria.map((c, i) => (
-            <li key={c.id} className="grid gap-4 px-5 py-5 sm:grid-cols-[1fr_7rem] sm:px-6">
-              <div className="flex flex-col gap-2">
+            <li key={c.id} className="grid gap-4 p-5 sm:grid-cols-[1fr_7rem]">
+              <div className="flex min-w-0 flex-col gap-2">
                 <div className="flex items-center gap-2.5">
-                  <span aria-hidden className={clsx("size-2.5 rounded-full", SHADES[i % SHADES.length])} />
-                  <h2 className="font-bold">{c.name}</h2>
+                  <span aria-hidden className={cn("size-2.5 shrink-0", SHADES[i % SHADES.length])} />
+                  <h2 className="text-base font-semibold">{c.name}</h2>
                 </div>
                 <label htmlFor={`desc-${c.id}`} className="sr-only">
                   Popis kritéria {c.name}
@@ -111,10 +112,7 @@ export function CriteriaEditor({
                   className="text-sm"
                 />
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor={`weight-${c.id}`} className="text-sm font-semibold">
-                  Váha
-                </label>
+              <Field label="Váha" htmlFor={`weight-${c.id}`}>
                 <Input
                   id={`weight-${c.id}`}
                   type="number"
@@ -123,14 +121,14 @@ export function CriteriaEditor({
                   max={100}
                   value={Number.isFinite(c.weight) ? c.weight : ""}
                   onChange={(e) => set(c.id, { weight: e.target.valueAsNumber })}
-                  className="text-lg font-bold"
+                  className="w-28 font-semibold sm:w-full"
                 />
-              </div>
+              </Field>
             </li>
           ))}
         </ul>
 
-        <div className="mt-5 flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             disabled={pending || !dirty}
             onClick={() =>
@@ -152,7 +150,7 @@ export function CriteriaEditor({
             </Button>
           ) : null}
           {message ? (
-            <p aria-live="polite" className={clsx("text-sm", message.ok ? "text-ok" : "text-bad")}>
+            <p aria-live="polite" className={cn("text-sm font-medium", message.ok ? "text-ok" : "text-bad")}>
               {message.text}
             </p>
           ) : null}
@@ -185,32 +183,35 @@ function Preview({ criteria }: { criteria: Criterion[] }) {
   );
 
   return (
-    <aside className="rounded-panel bg-surface p-5 ring-1 ring-line lg:sticky lg:top-28">
-      <h2 className="font-bold">Vyskúšajte výpočet</h2>
-      <p className="mt-1 text-sm text-muted">Koľko bodov by s aktuálnymi váhami získal takýto študent.</p>
-
-      <div className="mt-5 flex flex-col gap-4">
-        <Slider label="Vážený priemer" value={formatNumber(gpa)} min={1} max={4} step={0.1} current={gpa} onChange={setGpa} />
-        <Slider label="Vzdialenosť bydliska" value={`${km} km`} min={0} max={MAX_DISTANCE_KM + 100} step={10} current={km} onChange={setKm} />
-        <Slider label="Sociálna situácia" value={`stupeň ${social}`} min={0} max={3} step={1} current={social} onChange={setSocial} />
-        <label className="flex items-center gap-2.5 text-sm font-semibold">
-          <input type="checkbox" className="size-4 accent-pine" checked={health} onChange={(e) => setHealth(e.target.checked)} />
-          Overený zdravotný doklad
-        </label>
-      </div>
-
-      <dl className="mt-6 flex flex-col gap-1.5 border-t border-line pt-4 text-sm">
-        {criteria.map((c) => (
-          <div key={c.key} className="flex justify-between gap-3">
-            <dt className="text-muted">{c.name}</dt>
-            <dd className="font-semibold">{formatNumber(result.breakdown[c.key]?.points ?? 0)}</dd>
-          </div>
-        ))}
-        <div className="mt-2 flex items-baseline justify-between border-t border-line pt-3">
-          <dt className="font-bold">Spolu</dt>
-          <dd className="text-2xl font-extrabold">{formatNumber(result.points)}</dd>
+    <aside className="lg:sticky lg:top-28">
+      <Section
+        title="Vyskúšajte výpočet"
+        description="Koľko bodov by s aktuálnymi váhami získal takýto študent."
+      >
+        <div className="flex flex-col gap-5">
+          <Slider label="Vážený priemer" value={formatNumber(gpa)} min={1} max={4} step={0.1} current={gpa} onChange={setGpa} />
+          <Slider label="Vzdialenosť bydliska" value={`${km} km`} min={0} max={MAX_DISTANCE_KM + 100} step={10} current={km} onChange={setKm} />
+          <Slider label="Sociálna situácia" value={`stupeň ${social}`} min={0} max={3} step={1} current={social} onChange={setSocial} />
+          <CheckField
+            label="Overený zdravotný doklad"
+            checked={health}
+            onChange={(e) => setHealth(e.target.checked)}
+          />
         </div>
-      </dl>
+
+        <dl className="mt-5 flex flex-col gap-1.5 border-t border-line pt-4 text-sm tabular-nums">
+          {criteria.map((c) => (
+            <div key={c.key} className="flex justify-between gap-3">
+              <dt className="text-muted">{c.name}</dt>
+              <dd className="font-medium">{formatNumber(result.breakdown[c.key]?.points ?? 0)}</dd>
+            </div>
+          ))}
+          <div className="mt-2 flex items-baseline justify-between gap-3 border-t border-line pt-3">
+            <dt className="font-semibold">Spolu</dt>
+            <dd className="text-lg font-semibold">{formatNumber(result.points)}</dd>
+          </div>
+        </dl>
+      </Section>
     </aside>
   );
 }
@@ -234,9 +235,9 @@ function Slider({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="flex justify-between text-sm">
+      <span className="flex justify-between gap-3 text-sm">
         <span className="font-semibold">{label}</span>
-        <span className="text-muted">{value}</span>
+        <span className="text-muted tabular-nums">{value}</span>
       </span>
       <input
         type="range"
@@ -245,7 +246,7 @@ function Slider({
         step={step}
         value={current}
         onChange={(e) => onChange(Math.round(e.target.valueAsNumber * 10) / 10)}
-        className="accent-pine"
+        className="w-full accent-pine"
       />
     </label>
   );

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { DocumentRow } from "@/components/document-row";
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
-import { EmptyState, PageHeader } from "@/components/ui/page-header";
+import { EmptyState, PageHeader, Section } from "@/components/ui/page-header";
 import { applicationInclude, documentChecklist, STUDENT_EDITABLE } from "@/lib/applications";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -54,31 +55,23 @@ export default async function DocumentsPage() {
             const history = app.documents.filter((d) => d.type === type && !d.appealId && d.id !== doc?.id);
             const needsUpload = state === "CHYBA" || state === "DOPLNIT" || state === "ZAMIETNUTY";
             return (
-              <section key={type} className="rounded-panel bg-surface ring-1 ring-line">
-                <header className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 sm:px-6">
-                  <div className="max-w-lg">
-                    <h2 className="text-lg font-bold">{DOCUMENT_TYPE[type].label}</h2>
-                    <p className="mt-0.5 text-sm text-muted">{DOCUMENT_TYPE[type].hint}</p>
-                  </div>
-                  {state === "CHYBA" ? (
+              <Section
+                key={type}
+                title={DOCUMENT_TYPE[type].label}
+                description={DOCUMENT_TYPE[type].hint}
+                actions={
+                  state === "CHYBA" ? (
                     <Badge tone="bad">Chýba</Badge>
                   ) : (
                     <Badge tone={DOCUMENT_STATUS[state].tone}>{DOCUMENT_STATUS[state].label}</Badge>
-                  )}
-                </header>
-
-                <div className="flex flex-col gap-4 px-5 pt-4 pb-5 sm:px-6">
+                  )
+                }
+              >
+                <div className="flex flex-col gap-4">
                   {doc?.reviewNote && (state === "DOPLNIT" || state === "ZAMIETNUTY") ? (
-                    <div
-                      className={
-                        state === "DOPLNIT"
-                          ? "rounded-field bg-wait-tint px-4 py-3 text-sm"
-                          : "rounded-field bg-bad-tint px-4 py-3 text-sm"
-                      }
-                    >
-                      <p className="font-semibold">Poznámka referenta</p>
-                      <p className="mt-0.5">{doc.reviewNote}</p>
-                    </div>
+                    <Alert tone={state === "DOPLNIT" ? "wait" : "bad"} title="Poznámka referenta">
+                      {doc.reviewNote}
+                    </Alert>
                   ) : null}
 
                   {doc ? <DocumentRow doc={doc} /> : null}
@@ -88,13 +81,13 @@ export default async function DocumentsPage() {
                   ) : null}
 
                   {history.length > 0 ? (
-                    <details className="group text-sm">
-                      <summary className="cursor-pointer font-medium text-muted hover:text-ink">
+                    <details className="text-sm">
+                      <summary className="cursor-pointer font-medium text-ink-soft hover:text-ink">
                         Staršie verzie ({history.length})
                       </summary>
-                      <ul className="mt-3 flex flex-col gap-2">
+                      <ul className="mt-3 flex flex-col divide-y divide-line rounded-panel border border-line">
                         {history.map((h) => (
-                          <li key={h.id}>
+                          <li key={h.id} className="px-3.5 py-2.5">
                             <DocumentRow doc={h} compact />
                           </li>
                         ))}
@@ -102,7 +95,7 @@ export default async function DocumentsPage() {
                     </details>
                   ) : null}
                 </div>
-              </section>
+              </Section>
             );
           })}
           <p className="text-sm text-muted">

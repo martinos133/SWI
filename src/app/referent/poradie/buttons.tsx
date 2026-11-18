@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { calculate, confirm } from "./actions";
 
@@ -10,7 +11,6 @@ export function CalculateButton({ disabled }: { disabled: boolean }) {
   return (
     <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
       <Button
-        size="lg"
         disabled={disabled || pending}
         onClick={() =>
           startTransition(async () => {
@@ -22,9 +22,9 @@ export function CalculateButton({ disabled }: { disabled: boolean }) {
         {pending ? "Počítam poradie…" : "Vypočítať poradie"}
       </Button>
       {error ? (
-        <p role="alert" className="max-w-xs text-sm text-bad sm:text-right">
+        <Alert tone="bad" role="alert" className="max-w-sm">
           {error}
-        </p>
+        </Alert>
       ) : null}
     </div>
   );
@@ -37,18 +37,18 @@ export function ConfirmButton({ runId, count }: { runId: string; count: number }
 
   if (!asking) {
     return (
-      <Button size="lg" onClick={() => setAsking(true)}>
+      <Button onClick={() => setAsking(true)}>
         Potvrdiť pridelenie
       </Button>
     );
   }
   return (
-    <div className="flex max-w-sm flex-col gap-3 rounded-panel bg-surface p-4 ring-1 ring-line">
+    <div className="flex w-full max-w-sm flex-col gap-3 rounded-panel border border-line-strong bg-surface p-4">
       <p className="text-sm">
-        Pridelíte <strong>{count}</strong> miest. Študentom odíde e-mail s výsledkom a body uvidia v
+        Pridelíte <strong className="font-semibold">{count}</strong> miest. Študentom odíde e-mail s výsledkom a body uvidia v
         aplikácii. Potvrdené pridelenie sa už nedá vrátiť týmto výpočtom.
       </p>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           disabled={pending}
           onClick={() =>
@@ -66,9 +66,9 @@ export function ConfirmButton({ runId, count }: { runId: string; count: number }
         </Button>
       </div>
       {error ? (
-        <p role="alert" className="text-sm text-bad">
+        <Alert tone="bad" role="alert">
           {error}
-        </p>
+        </Alert>
       ) : null}
     </div>
   );

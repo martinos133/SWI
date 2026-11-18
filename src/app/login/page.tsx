@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Wordmark } from "@/components/logo";
+import { Alert } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { minutesLabel, OTP_LOCK_MINUTES } from "@/lib/otp-lockout";
@@ -39,100 +41,94 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
     : [];
 
   return (
-    <div className="grid min-h-dvh lg:grid-cols-[1.15fr_1fr]">
-      <section className="relative flex flex-col overflow-hidden bg-pine px-6 py-8 text-white sm:px-10 lg:px-14 lg:py-12">
-        <Wordmark inverted />
+    <div className="flex min-h-dvh flex-col">
+      <header className="border-b border-line bg-surface">
+        <div className="mx-auto flex max-w-5xl items-center px-4 py-3 sm:px-6">
+          <Wordmark />
+        </div>
+      </header>
 
-        <div className="mt-10 max-w-xl lg:mt-auto">
-          <h1 className="text-[2.25rem] leading-[1.02] font-extrabold tracking-[-0.035em] sm:text-display">
-            Miesto na internáte na akademický rok {period?.academicYear ?? ""}
-          </h1>
-          <p className="mt-5 hidden max-w-md text-lg leading-relaxed text-white/70 sm:block">
-            Žiadosť podáte online, stav a chýbajúce doklady vidíte priebežne.
-            Poradie počíta systém podľa kritérií, ktoré schválila ubytovacia
-            komisia.
-          </p>
+      <main className="mx-auto grid w-full max-w-5xl flex-1 content-start gap-8 px-4 py-8 sm:px-6 sm:py-14 lg:grid-cols-[1fr_24rem] lg:gap-12">
+        <div className="lg:order-last">
+          <div className="rounded-panel border border-line bg-surface p-6 sm:p-7">
+            <h2 className="text-xl font-semibold">Prihlásenie</h2>
+            <p className="mt-1.5 text-[0.9375rem] text-muted">
+              Prihláste sa univerzitným kontom. Potom potvrdíte totožnosť kódom z aplikácie
+              Authenticator.
+            </p>
+
+            {dovod === "pokusy" ? (
+              <Alert tone="bad" role="alert" className="mt-5">
+                Kód ste zadali nesprávne priveľakrát. Konto je na {minutesLabel(OTP_LOCK_MINUTES)}{" "}
+                zablokované.
+              </Alert>
+            ) : null}
+
+            <ButtonLink href="/sso" size="lg" className="mt-6 w-full">
+              Prihlásiť sa univerzitným kontom
+            </ButtonLink>
+
+            <p className="mt-6 border-t border-line pt-5 text-sm text-muted">
+              Systém nemá vlastné heslá. S prístupom vám pomôže IT oddelenie, s otázkami
+              k ubytovaniu{" "}
+              <a
+                className="font-medium text-pine underline underline-offset-4"
+                href="mailto:ubytovanie@uniba.example"
+              >
+                ubytovacie oddelenie
+              </a>
+              .
+            </p>
+          </div>
         </div>
 
-        {milestones.length > 0 ? (
-          <ol className="mt-12 hidden gap-px overflow-hidden rounded-panel bg-white/10 sm:grid sm:grid-cols-3 lg:mt-16">
-            {milestones.map((m, i) => (
-              <li key={m.label} className="bg-pine p-4 sm:p-5">
-                <p className="flex items-center gap-2 text-sm text-white/55">
-                  {i + 1}
-                  {m.current ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-brass px-2 py-0.5 text-xs font-semibold text-pine">
-                      prebieha
-                    </span>
-                  ) : null}
-                </p>
-                <p className="mt-2 font-semibold">{m.label}</p>
-                <p className="mt-1 text-sm text-white/70">{m.when}</p>
-              </li>
-            ))}
-          </ol>
-        ) : null}
-
-        {/* Dekoratívny obrys kľúčenky v pravom hornom rohu */}
-        <svg
-          aria-hidden
-          viewBox="0 0 24 30"
-          className="pointer-events-none absolute -top-16 -right-20 h-[26rem] w-auto opacity-[0.07]"
-        >
-          <path
-            d="M12 1.5c5.8 0 10.5 4.2 10.5 9.6V24a4.5 4.5 0 0 1-4.5 4.5H6A4.5 4.5 0 0 1 1.5 24V11.1C1.5 5.7 6.2 1.5 12 1.5Z"
-            fill="none"
-            stroke="#fff"
-            strokeWidth="0.35"
-          />
-          <circle cx="12" cy="8" r="2.4" fill="none" stroke="#fff" strokeWidth="0.35" />
-        </svg>
-      </section>
-
-      <section className="flex items-center px-6 py-12 sm:px-10">
-        <div className="mx-auto w-full max-w-sm">
-          <h2 className="text-2xl font-bold">Prihlásenie</h2>
-          <p className="mt-2 text-muted">
-            Prihláste sa univerzitným kontom. Potom potvrdíte totožnosť kódom
-            z aplikácie Authenticator.
+        <div className="max-w-2xl">
+          <p className="text-sm font-semibold text-muted">
+            Akademický rok {period?.academicYear ?? "–"}
           </p>
-
-          {dovod === "pokusy" ? (
-            <p role="alert" className="mt-6 rounded-field bg-bad-tint px-4 py-3 text-sm text-bad">
-              Kód ste zadali nesprávne priveľakrát. Konto je na {minutesLabel(OTP_LOCK_MINUTES)} zablokované.
-            </p>
-          ) : null}
-
-          <ButtonLink href="/sso" size="lg" className="mt-8 w-full">
-            Prihlásiť sa univerzitným kontom
-          </ButtonLink>
+          <h1 className="mt-1 text-2xl leading-tight font-semibold sm:text-[2rem]">
+            Ubytovanie v&nbsp;študentských domovoch
+          </h1>
+          <p className="mt-3 text-ink-soft">
+            Žiadosť o miesto na internáte podáte online, stav a chýbajúce doklady vidíte priebežne.
+            Poradie počíta systém podľa kritérií, ktoré schválila ubytovacia komisia.
+          </p>
 
           {milestones.length > 0 ? (
-            <ol className="mt-10 flex flex-col gap-3 border-t border-line pt-6 sm:hidden">
-              {milestones.map((m) => (
-                <li key={m.label} className="flex flex-col text-sm">
-                  <span className="font-semibold">
-                    {m.label}
-                    {m.current ? (
-                      <span className="ml-2 rounded-full bg-brass px-2 py-0.5 text-xs text-pine">prebieha</span>
-                    ) : null}
-                  </span>
-                  <span className="text-muted">{m.when}</span>
-                </li>
-              ))}
-            </ol>
+            <section className="mt-8" aria-labelledby="harmonogram">
+              <h2 id="harmonogram" className="text-base font-semibold">
+                Harmonogram
+              </h2>
+              <ol className="mt-3 divide-y divide-line rounded-panel border border-line bg-surface">
+                {milestones.map((m, i) => (
+                  <li key={m.label} className="flex items-start gap-4 px-4 py-3.5">
+                    <span
+                      className={
+                        m.current
+                          ? "grid size-6 shrink-0 place-items-center rounded-full bg-pine text-xs font-semibold text-white"
+                          : "grid size-6 shrink-0 place-items-center rounded-full border border-line-strong text-xs font-semibold text-ink-soft"
+                      }
+                    >
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">{m.label}</p>
+                      <p className="text-sm text-muted">{m.when}</p>
+                    </div>
+                    {m.current ? <Badge tone="ok">Prebieha</Badge> : null}
+                  </li>
+                ))}
+              </ol>
+            </section>
           ) : null}
-
-          <p className="mt-6 text-sm text-muted">
-            Systém nemá vlastné heslá. S prístupom vám pomôže IT oddelenie,
-            s otázkami k ubytovaniu{" "}
-            <a className="font-medium text-ink underline underline-offset-2" href="mailto:ubytovanie@uniba.example">
-              ubytovacie oddelenie
-            </a>
-            .
-          </p>
         </div>
-      </section>
+      </main>
+
+      <footer className="border-t border-line bg-surface">
+        <p className="mx-auto max-w-5xl px-4 py-4 text-sm text-muted sm:px-6">
+          Ubytovacie oddelenie univerzity
+        </p>
+      </footer>
     </div>
   );
 }

@@ -1,14 +1,14 @@
-import clsx from "clsx";
+import { cn } from "@/lib/cn";
 import type { ReactNode } from "react";
 import type { Tone } from "@/lib/status";
 
+/** Stavový štítok: obdĺžnik s jemným podkladom a orámovaním v tóne stavu. */
 const tones: Record<Tone, string> = {
-  neutral: "bg-sunken text-ink-soft",
-  info: "bg-info-tint text-info",
-  wait: "bg-wait-tint text-wait",
-  ok: "bg-ok-tint text-ok",
-  bad: "bg-bad-tint text-bad",
-  brass: "bg-brass-tint text-brass-deep",
+  neutral: "border-line-strong bg-sunken text-ink-soft",
+  info: "border-info-line bg-info-tint text-info",
+  wait: "border-wait-line bg-wait-tint text-wait",
+  ok: "border-ok-line bg-ok-tint text-ok",
+  bad: "border-bad-line bg-bad-tint text-bad",
 };
 
 export function Badge({
@@ -22,13 +22,12 @@ export function Badge({
 }) {
   return (
     <span
-      className={clsx(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[0.8125rem] font-semibold whitespace-nowrap",
+      className={cn(
+        "inline-flex h-6 items-center rounded-tag border px-2 text-[0.8125rem] leading-none font-semibold whitespace-nowrap",
         tones[tone],
         className,
       )}
     >
-      <span aria-hidden className="size-1.5 rounded-full bg-current" />
       {children}
     </span>
   );

@@ -1,8 +1,10 @@
-import clsx from "clsx";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { describe } from "@/components/audit-timeline";
+import { Badge } from "@/components/ui/badge";
 import { EmptyState, PageHeader } from "@/components/ui/page-header";
+import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
+import { Tabs } from "@/components/ui/tabs";
 import { AUDIT_LABEL } from "@/lib/audit";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -37,24 +39,19 @@ export default async function AuditPage({ searchParams }: PageProps<"/audit">) {
         description="Každá zmena bodov, posúdenie dokladu a rozhodnutie je zapísané a nedá sa upraviť ani zmazať."
       />
 
-      <nav aria-label="Záložky" className="mb-6 flex gap-6 border-b border-line">
-        {[
+      <Tabs
+        label="Záložky"
+        className="mb-6"
+        items={[
           { key: "zaznamy", label: "Záznamy" },
           { key: "emaily", label: "Odoslané e-maily" },
-        ].map((t) => (
-          <Link
-            key={t.key}
-            href={{ pathname: "/audit", query: { zalozka: t.key } }}
-            aria-current={tab === t.key ? "page" : undefined}
-            className={clsx(
-              "-mb-px border-b-2 pb-3 font-medium transition-colors",
-              tab === t.key ? "border-pine text-ink" : "border-transparent text-muted hover:text-ink",
-            )}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </nav>
+        ].map((t) => ({
+          key: t.key,
+          href: { pathname: "/audit", query: { zalozka: t.key } },
+          label: t.label,
+          active: tab === t.key,
+        }))}
+      />
 
       {tab === "emaily" ? <Emails /> : <Entries group={group} canOpen={user.role === "REFERENT"} />}
     </>
@@ -91,63 +88,61 @@ async function Entries({ group, canOpen }: { group: (typeof GROUPS)[number]; can
 
   return (
     <>
-      <div className="-mx-1 mb-5 flex gap-1 overflow-x-auto px-1 pb-1">
-        {GROUPS.map((g) => (
-          <Link
-            key={g.key}
-            href={{ pathname: "/audit", query: { typ: g.key } }}
-            aria-current={g.key === group.key ? "page" : undefined}
-            className={clsx(
-              "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
-              g.key === group.key ? "bg-pine text-white" : "text-ink-soft hover:bg-sunken",
-            )}
-          >
-            {g.label}
-          </Link>
-        ))}
-      </div>
+      <Tabs
+        label="Filtrovať podľa typu udalosti"
+        className="mb-5"
+        items={GROUPS.map((g) => ({
+          key: g.key,
+          href: { pathname: "/audit", query: { typ: g.key } },
+          label: g.label,
+          active: g.key === group.key,
+        }))}
+      />
 
       {entries.length === 0 ? (
         <EmptyState title="V tejto kategórii zatiaľ nie sú žiadne záznamy" />
       ) : (
-        <div className="overflow-x-auto rounded-panel bg-surface ring-1 ring-line">
-          <table className="w-full min-w-[44rem] text-left text-sm">
-            <thead className="border-b border-line text-muted">
-              <tr>
-                <th className="px-5 py-3 font-medium">Čas</th>
-                <th className="px-5 py-3 font-medium">Udalosť</th>
-                <th className="px-5 py-3 font-medium">Týka sa</th>
-                <th className="px-5 py-3 font-medium">Kto</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {entries.map((entry) => {
-                const detail = describe(entry);
-                const appId = applicationOf(entry);
-                const owner = appId ? owners.get(appId) : null;
-                return (
-                  <tr key={entry.id} className="align-top">
-                    <td className="px-5 py-3 whitespace-nowrap text-muted">{formatDateTime(entry.createdAt)}</td>
-                    <td className="px-5 py-3">
-                      <p className="font-semibold">{AUDIT_LABEL[entry.action] ?? entry.action}</p>
-                      {detail ? <p className="max-w-lg text-ink-soft">{detail}</p> : null}
-                    </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      {owner && canOpen ? (
-                        <Link href={`/referent/ziadosti/${appId}`} className="font-medium underline-offset-2 hover:underline">
-                          {owner}
-                        </Link>
-                      ) : (
-                        (owner ?? <span className="text-muted">–</span>)
-                      )}
-                    </td>
-                    <td className="px-5 py-3 whitespace-nowrap">{entry.actor?.name ?? "systém"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <THead>
+            <tr>
+              <TH>Čas</TH>
+              <TH>Udalosť</TH>
+              <TH>Týka sa</TH>
+              <TH>Kto</TH>
+            </tr>
+          </THead>
+          <TBody>
+            {entries.map((entry) => {
+              const detail = describe(entry);
+              const appId = applicationOf(entry);
+              const owner = appId ? owners.get(appId) : null;
+              return (
+                <TR key={entry.id}>
+                  <TD className="align-top text-sm whitespace-nowrap text-muted tabular-nums">
+                    {formatDateTime(entry.createdAt)}
+                  </TD>
+                  <TD className="align-top">
+                    <p className="font-semibold">{AUDIT_LABEL[entry.action] ?? entry.action}</p>
+                    {detail ? <p className="max-w-lg text-sm text-ink-soft">{detail}</p> : null}
+                  </TD>
+                  <TD className="align-top whitespace-nowrap">
+                    {owner && canOpen ? (
+                      <Link
+                        href={`/referent/ziadosti/${appId}`}
+                        className="font-medium text-pine underline decoration-pine/30 underline-offset-4 hover:decoration-pine"
+                      >
+                        {owner}
+                      </Link>
+                    ) : (
+                      (owner ?? <span className="text-muted">–</span>)
+                    )}
+                  </TD>
+                  <TD className="align-top whitespace-nowrap">{entry.actor?.name ?? "systém"}</TD>
+                </TR>
+              );
+            })}
+          </TBody>
+        </Table>
       )}
       <p className="mt-3 text-sm text-muted">Zobrazených je najviac 150 najnovších záznamov.</p>
     </>
@@ -161,15 +156,15 @@ async function Emails() {
     <ul className="flex flex-col gap-3">
       {emails.map((mail) => (
         <li key={mail.id}>
-          <details className="group rounded-panel bg-surface ring-1 ring-line">
-            <summary className="flex cursor-pointer list-none flex-col gap-1 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+          <details className="group rounded-panel border border-line bg-surface">
+            <summary className="flex cursor-pointer list-none flex-col gap-1 rounded-panel px-5 py-3.5 transition-colors group-open:rounded-b-none hover:bg-hover sm:flex-row sm:items-center sm:justify-between">
               <span className="min-w-0">
                 <span className="block truncate font-semibold">{mail.subject}</span>
                 <span className="block truncate text-sm text-muted">{mail.to}</span>
               </span>
-              <span className="shrink-0 text-sm text-muted">
+              <span className="flex shrink-0 items-center gap-2 text-sm text-muted tabular-nums">
                 {formatDateTime(mail.createdAt)}
-                {mail.status === "CHYBA" ? <span className="ml-2 font-semibold text-bad">neodoslané</span> : null}
+                {mail.status === "CHYBA" ? <Badge tone="bad">neodoslané</Badge> : null}
               </span>
             </summary>
             <pre className="border-t border-line px-5 py-4 font-sans text-sm leading-relaxed whitespace-pre-wrap text-ink-soft">

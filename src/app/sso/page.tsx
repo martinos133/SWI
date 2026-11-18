@@ -30,7 +30,7 @@ export default async function SsoPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-[#e9ebef]">
       <header className="border-b border-[#d5d9e0] bg-white">
-        <div className="mx-auto flex max-w-md items-center gap-3 px-6 py-4">
+        <div className="mx-auto flex max-w-md items-center gap-3 px-4 py-4 sm:px-6">
           <span className="grid size-8 place-items-center rounded-md bg-[#26324a] text-sm font-bold text-white">
             U
           </span>
@@ -41,16 +41,19 @@ export default async function SsoPage() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-md flex-1 px-6 py-10">
-        <div className="rounded-xl bg-white p-6 shadow-[0_1px_2px_rgba(38,50,74,0.08)] ring-1 ring-[#d5d9e0] sm:p-8">
-          <h1 className="text-xl font-bold text-[#26324a]">Prihlásenie do služby Ubytovanie</h1>
+      <main className="mx-auto w-full max-w-md flex-1 px-4 py-10 sm:px-6">
+        <div className="rounded-md border border-[#d5d9e0] bg-white p-6 sm:p-8">
+          <h1 className="text-xl font-semibold text-[#26324a]">Prihlásenie do služby Ubytovanie</h1>
           <p className="mt-1 mb-6 text-sm text-[#6b7385]">
             Použite rovnaké meno ako do akademického informačného systému.
           </p>
           <SsoForm demo={demo} />
         </div>
         <p className="mt-6 text-center text-sm">
-          <Link href="/login" className="text-[#4a5670] underline underline-offset-2">
+          <Link
+            href="/login"
+            className="text-[#3d4963] underline decoration-[#3d4963]/40 underline-offset-4 hover:decoration-[#3d4963] focus-visible:outline-[#26324a]"
+          >
             Späť do aplikácie Ubytovanie
           </Link>
         </p>

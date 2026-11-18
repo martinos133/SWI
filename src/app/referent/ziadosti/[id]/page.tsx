@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { AuditTimeline } from "@/components/audit-timeline";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader, Section } from "@/components/ui/page-header";
 import { applicationInclude, documentChecklist } from "@/lib/applications";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -41,40 +42,35 @@ export default async function ApplicationDetail({ params }: PageProps<"/referent
 
   return (
     <>
-      <Link
-        href="/referent"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-ink"
-      >
-        <svg viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden>
-          <path d="m10 3.5-4.5 4.5 4.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        Žiadosti
-      </Link>
-
-      <header className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-bold sm:text-4xl">{app.student.name}</h1>
+      <PageHeader
+        meta={
+          <Link href="/referent" className="inline-flex items-center gap-1 font-medium text-muted hover:text-ink">
+            <svg viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+              <path d="m10 3.5-4.5 4.5 4.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Žiadosti
+          </Link>
+        }
+        title={app.student.name}
+        description={
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
             <Badge tone={STATUS[app.status].tone}>{STATUS[app.status].label}</Badge>
-          </div>
-          <p className="mt-2 text-muted">
-            {app.student.login}, {app.student.email}
-            {app.submittedAt ? `, podaná ${formatDate(app.submittedAt)}` : ""}
-          </p>
-        </div>
-        <ApplicationActions applicationId={app.id} status={app.status} freeRooms={freeRoomList} />
-      </header>
+            <span>
+              {app.student.login}, {app.student.email}
+              {app.submittedAt ? `, podaná ${formatDate(app.submittedAt)}` : ""}
+            </span>
+          </span>
+        }
+        actions={<ApplicationActions applicationId={app.id} status={app.status} freeRooms={freeRoomList} />}
+      />
 
-      <div className="grid items-start gap-12 lg:grid-cols-[1fr_20rem]">
-        <div className="flex min-w-0 flex-col gap-12">
-          <section aria-labelledby="doklady">
-            <h2 id="doklady" className="text-lg font-bold">
-              Doklady
-            </h2>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-8">
+        <div className="flex min-w-0 flex-col gap-6">
+          <Section title="Doklady" flush>
             {checklist.length === 0 ? (
-              <p className="mt-2 text-muted">Študent nežiada o zohľadnenie osobitných okolností.</p>
+              <p className="px-5 py-5 text-muted">Študent nežiada o zohľadnenie osobitných okolností.</p>
             ) : (
-              <div className="mt-4 flex flex-col gap-4">
+              <div className="divide-y divide-line">
                 {checklist.map(({ type, doc }) => (
                   <DocumentReview
                     key={type}
@@ -96,13 +92,10 @@ export default async function ApplicationDetail({ params }: PageProps<"/referent
                 ))}
               </div>
             )}
-          </section>
+          </Section>
 
-          <section aria-labelledby="ziadost">
-            <h2 id="ziadost" className="text-lg font-bold">
-              Údaje žiadosti
-            </h2>
-            <dl className="mt-4 grid gap-x-8 gap-y-5 rounded-panel bg-surface p-5 ring-1 ring-line sm:grid-cols-2 sm:p-6">
+          <Section title="Údaje žiadosti">
+            <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
               <Fact label="Študijný program">{app.aisProgram ?? "–"}</Fact>
               <Fact label="Ročník">{app.aisYear ? `${app.aisYear}.` : "–"}</Fact>
               <Fact label="Vážený priemer">{formatNumber(app.aisGpa)}</Fact>
@@ -137,11 +130,11 @@ export default async function ApplicationDetail({ params }: PageProps<"/referent
                 </Fact>
               ) : null}
             </dl>
-          </section>
+          </Section>
         </div>
 
-        <aside aria-labelledby="historia" className="lg:sticky lg:top-28">
-          <h2 id="historia" className="mb-4 text-lg font-bold">
+        <aside aria-labelledby="historia" className="min-w-0 lg:sticky lg:top-28">
+          <h2 id="historia" className="mb-4 text-base leading-6 font-semibold">
             História
           </h2>
           <AuditTimeline entries={history} />
@@ -153,9 +146,9 @@ export default async function ApplicationDetail({ params }: PageProps<"/referent
 
 function Fact({ label, children, wide }: { label: string; children: ReactNode; wide?: boolean }) {
   return (
-    <div className={wide ? "sm:col-span-2" : undefined}>
-      <dt className="text-sm text-muted">{label}</dt>
-      <dd className="mt-0.5 font-medium">{children}</dd>
+    <div className={wide ? "min-w-0 sm:col-span-2" : "min-w-0"}>
+      <dt className="text-[0.8125rem] text-muted">{label}</dt>
+      <dd className="mt-0.5 font-medium break-words text-ink">{children}</dd>
     </div>
   );
 }

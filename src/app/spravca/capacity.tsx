@@ -1,8 +1,10 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Select } from "@/components/ui/field";
+import { describedBy, Field, FieldError, Input, Select } from "@/components/ui/field";
+import { Section } from "@/components/ui/page-header";
 import { addDorm, addRoomType, updateCapacity, type ActionResult } from "./actions";
 
 export function CapacityInput({
@@ -21,6 +23,7 @@ export function CapacityInput({
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
   const dirty = value !== String(capacity);
+  const inputId = `capacity-${roomTypeId}`;
 
   const save = () =>
     startTransition(async () => {
@@ -37,10 +40,12 @@ export function CapacityInput({
         e.preventDefault();
         save();
       }}
-      className="flex flex-col gap-1"
+      className="flex flex-col gap-1.5"
     >
       <div className="flex items-center gap-2">
         <Input
+          id={inputId}
+          size="sm"
           aria-label={label}
           type="number"
           inputMode="numeric"
@@ -51,17 +56,26 @@ export function CapacityInput({
             setSaved(false);
           }}
           aria-invalid={Boolean(error)}
-          className="w-20 font-semibold"
+          aria-describedby={describedBy(inputId, { error })}
+          className="w-20"
         />
         {dirty ? (
           <Button type="submit" size="sm" disabled={pending}>
             Uložiť
           </Button>
         ) : saved ? (
-          <span className="text-sm text-ok">Uložené</span>
+          <span role="status" className="text-sm font-medium text-ok">
+            Uložené
+          </span>
         ) : null}
       </div>
-      {error ? <p className="max-w-56 text-sm text-bad">{error}</p> : null}
+      {error ? (
+        <div className="max-w-56">
+          <FieldError id={`${inputId}-error`} role="alert">
+            {error}
+          </FieldError>
+        </div>
+      ) : null}
     </form>
   );
 }
@@ -74,18 +88,14 @@ export function AddRoomForm({ dormId, existing }: { dormId: string; existing: nu
 
   if (!open) {
     return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="text-sm font-medium text-muted underline underline-offset-2 hover:text-ink"
-      >
+      <Button type="button" variant="secondary" size="sm" onClick={() => setOpen(true)}>
         Pridať typ izby
-      </button>
+      </Button>
     );
   }
 
   return (
-    <form action={action} className="flex flex-wrap items-end gap-3">
+    <form action={action} className="flex flex-wrap items-end gap-x-4 gap-y-3">
       <input type="hidden" name="dormId" value={dormId} />
       <Field label="Typ izby" htmlFor={`beds-${dormId}`}>
         <Select id={`beds-${dormId}`} name="beds" className="w-44">
@@ -105,7 +115,11 @@ export function AddRoomForm({ dormId, existing }: { dormId: string; existing: nu
       <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
         Zrušiť
       </Button>
-      {state && !state.ok ? <p className="w-full text-sm text-bad">{state.error}</p> : null}
+      {state && !state.ok ? (
+        <div className="w-full">
+          <FieldError role="alert">{state.error}</FieldError>
+        </div>
+      ) : null}
     </form>
   );
 }
@@ -114,12 +128,8 @@ export function AddDormForm() {
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(addDorm, null);
 
   return (
-    <section aria-labelledby="novy-internat" className="rounded-panel border border-dashed border-line-strong px-5 py-5 sm:px-6">
-      <h2 id="novy-internat" className="font-bold">
-        Nový internát
-      </h2>
-      <p className="mt-0.5 text-sm text-muted">Typy izieb a kapacity doplníte po pridaní.</p>
-      <form action={action} className="mt-4 grid gap-4 sm:grid-cols-[1fr_7rem_1.4fr_auto] sm:items-end">
+    <Section id="novy-internat" title="Nový internát" description="Typy izieb a kapacity doplníte po pridaní.">
+      <form action={action} className="grid gap-5 sm:grid-cols-[1fr_7rem_1.4fr_auto] sm:items-end sm:gap-4">
         <Field label="Názov" htmlFor="dorm-name">
           <Input id="dorm-name" name="name" required placeholder="Napríklad Mladosť" />
         </Field>
@@ -133,7 +143,11 @@ export function AddDormForm() {
           Pridať internát
         </Button>
       </form>
-      {state && !state.ok ? <p className="mt-3 text-sm text-bad">{state.error}</p> : null}
-    </section>
+      {state && !state.ok ? (
+        <Alert tone="bad" role="alert" className="mt-4">
+          {state.error}
+        </Alert>
+      ) : null}
+    </Section>
   );
 }

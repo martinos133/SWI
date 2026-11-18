@@ -47,7 +47,7 @@ ROZPRACOVANA / PODANA / OVERUJE_SA / CAKA_NA_DOPLNENIE ─► ZRUSENA
 
 ## Dizajn
 
-Primárna farba je tmavozelená (`#0F2E2A`) pre text a akcie, mosadzná (`#C9A24B`)
-slúži ako jediná akcentová farba. Písmo Schibsted Grotesk. Charakteristickým prvkom
-rozhrania je **kľúčenka** – stav ubytovania zobrazený ako visačka kľúča od izby,
-ktorá zostáva prázdna, kým študent nemá pridelené miesto.
+Vecný úradný vzhľad: neutrálny sivý podklad, jedna značková farba (tmavozelená `#14473F`)
+pre akcie a aktívne stavy, stavové farby iba na stav. Písmo IBM Plex Sans, rohy 4–6 px,
+bez tieňov a animácií. Všetky formulárové prvky, tlačidlá, tabuľky a upozornenia sú
+spoločné komponenty v `src/components/ui`. Pravidlá a použitie: [dizajn-system.md](dizajn-system.md).

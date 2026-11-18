@@ -15,7 +15,7 @@
     "retencia": "tsx scripts/retention.ts",
     "e2e:server": "prisma migrate deploy && tsx prisma/seed.ts && next build && next start -p $PORT",
     "test:e2e": "playwright test --project=e2e",
-    "screenshots": "playwright test --project=screenshots",
+    "screenshots": "playwright test --project=screenshots e2e/screenshots.spec && playwright test --project=screenshots doc-screenshots.spec",
     "db:deploy": "tsx scripts/apply-migrations.mts"
   },
   "dependencies": {

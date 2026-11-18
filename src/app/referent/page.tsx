@@ -1,8 +1,10 @@
-import clsx from "clsx";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/field";
 import { EmptyState, PageHeader } from "@/components/ui/page-header";
+import { rowLinkClass, Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
+import { Tabs } from "@/components/ui/tabs";
 import type { Prisma } from "@/generated/prisma/client";
 import type { ApplicationStatus } from "@/generated/prisma/enums";
 import { requireUser } from "@/lib/auth";
@@ -73,40 +75,24 @@ export default async function ApplicationsPage({ searchParams }: PageProps<"/ref
         description={`Akademický rok ${period.academicYear}, spolu ${countFor(null)} žiadostí.`}
       />
 
-      <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <nav aria-label="Filtrovať podľa stavu" className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1">
-          {FILTERS.map((f) => {
-            const active = f.key === filter.key;
-            return (
-              <Link
-                key={f.key}
-                href={{ pathname: "/referent", query: { stav: f.key, ...(q ? { q } : {}) } }}
-                aria-current={active ? "page" : undefined}
-                className={clsx(
-                  "inline-flex shrink-0 items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
-                  active ? "bg-pine text-white" : "text-ink-soft hover:bg-sunken",
-                )}
-              >
-                {f.label}
-                <span className={clsx("", active ? "text-white/70" : "text-muted")}>
-                  {countFor(f.statuses)}
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
+      <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <Tabs
+          label="Filtrovať podľa stavu"
+          className="min-w-0 xl:flex-1"
+          items={FILTERS.map((f) => ({
+            key: f.key,
+            href: { pathname: "/referent", query: { stav: f.key, ...(q ? { q } : {}) } },
+            label: f.label,
+            count: countFor(f.statuses),
+            active: f.key === filter.key,
+          }))}
+        />
         <form className="w-full xl:w-72" role="search">
           <input type="hidden" name="stav" value={filter.key} />
           <label htmlFor="q" className="sr-only">
             Hľadať študenta
           </label>
-          <input
-            id="q"
-            name="q"
-            defaultValue={q}
-            placeholder="Hľadať meno alebo login"
-            className="h-10 w-full rounded-field bg-surface px-3 text-[0.9375rem] ring-1 ring-inset ring-line-strong placeholder:text-muted/70 focus:ring-2 focus:ring-pine focus:outline-none"
-          />
+          <Input id="q" name="q" type="search" defaultValue={q} placeholder="Hľadať meno alebo login" />
         </form>
       </div>
 
@@ -115,61 +101,56 @@ export default async function ApplicationsPage({ searchParams }: PageProps<"/ref
           {q ? "Skúste iné meno alebo login." : "Skúste iný filter."}
         </EmptyState>
       ) : (
-        <div className="overflow-x-auto rounded-panel bg-surface ring-1 ring-line">
-          <table className="w-full min-w-[44rem] text-left">
-            <thead className="border-b border-line text-sm text-muted">
-              <tr>
-                <th className="px-5 py-3 font-medium">Študent</th>
-                <th className="px-5 py-3 font-medium">Podaná</th>
-                <th className="px-5 py-3 font-medium">Doklady</th>
-                <th className="px-5 py-3 font-medium">Stav</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {applications.map((app) => {
-                const latest = new Map<string, (typeof app.documents)[number]>();
-                for (const d of app.documents) if (!latest.has(d.type)) latest.set(d.type, d);
-                const docs = [...latest.values()];
-                const waiting = docs.filter((d) => d.status === "NAHRANY").length;
-                const missing =
-                  Number(app.claimsSocial && !latest.has("PRIJEM")) +
-                  Number(app.claimsHealth && !latest.has("ZDRAVOTNY"));
-                return (
-                  <tr key={app.id} className="group relative transition-colors hover:bg-paper">
-                    <td className="px-5 py-3.5">
-                      <Link
-                        href={`/referent/ziadosti/${app.id}`}
-                        className="font-semibold after:absolute after:inset-0 group-hover:underline"
-                      >
-                        {app.student.name}
-                      </Link>
-                      <p className="text-sm text-muted">
-                        {app.student.login}, {app.aisProgram ?? "program neznámy"}
-                      </p>
-                    </td>
-                    <td className="px-5 py-3.5 text-sm">
-                      {app.submittedAt ? formatShortDate(app.submittedAt) : <span className="text-muted">–</span>}
-                    </td>
-                    <td className="px-5 py-3.5 text-sm">
-                      {docs.length === 0 && missing === 0 ? (
-                        <span className="text-muted">netreba</span>
-                      ) : (
-                        <span className="flex flex-wrap gap-x-3 gap-y-1">
-                          {waiting > 0 ? <span className="font-semibold text-info">{waiting} na posúdenie</span> : null}
-                          {missing > 0 ? <span className="font-semibold text-bad">{missing} chýba</span> : null}
-                          {waiting === 0 && missing === 0 ? <span className="text-muted">posúdené</span> : null}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <Badge tone={STATUS[app.status].tone}>{STATUS[app.status].label}</Badge>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <THead>
+            <tr>
+              <TH>Študent</TH>
+              <TH>Podaná</TH>
+              <TH>Doklady</TH>
+              <TH>Stav</TH>
+            </tr>
+          </THead>
+          <TBody>
+            {applications.map((app) => {
+              const latest = new Map<string, (typeof app.documents)[number]>();
+              for (const d of app.documents) if (!latest.has(d.type)) latest.set(d.type, d);
+              const docs = [...latest.values()];
+              const waiting = docs.filter((d) => d.status === "NAHRANY").length;
+              const missing =
+                Number(app.claimsSocial && !latest.has("PRIJEM")) +
+                Number(app.claimsHealth && !latest.has("ZDRAVOTNY"));
+              return (
+                <TR key={app.id} interactive>
+                  <TD>
+                    <Link href={`/referent/ziadosti/${app.id}`} className={rowLinkClass}>
+                      {app.student.name}
+                    </Link>
+                    <p className="text-sm text-muted">
+                      {app.student.login}, {app.aisProgram ?? "program neznámy"}
+                    </p>
+                  </TD>
+                  <TD className="text-sm tabular-nums">
+                    {app.submittedAt ? formatShortDate(app.submittedAt) : <span className="text-muted">–</span>}
+                  </TD>
+                  <TD className="text-sm">
+                    {docs.length === 0 && missing === 0 ? (
+                      <span className="text-muted">netreba</span>
+                    ) : (
+                      <span className="flex flex-wrap gap-x-3 gap-y-1">
+                        {waiting > 0 ? <span className="font-semibold text-info">{waiting} na posúdenie</span> : null}
+                        {missing > 0 ? <span className="font-semibold text-bad">{missing} chýba</span> : null}
+                        {waiting === 0 && missing === 0 ? <span className="text-muted">posúdené</span> : null}
+                      </span>
+                    )}
+                  </TD>
+                  <TD>
+                    <Badge tone={STATUS[app.status].tone}>{STATUS[app.status].label}</Badge>
+                  </TD>
+                </TR>
+              );
+            })}
+          </TBody>
+        </Table>
       )}
     </>
   );

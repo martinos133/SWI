@@ -1,9 +1,9 @@
 "use client";
 
-import clsx from "clsx";
 import { useState, useTransition } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Select, Textarea } from "@/components/ui/field";
+import { ChoiceCard, describedBy, Field, Fieldset, Input, Select, Textarea } from "@/components/ui/field";
 import { decideAppeal } from "./actions";
 
 type Room = { id: string; label: string; free: number };
@@ -42,46 +42,42 @@ export function AppealDecision({
       if (!result.ok) setError(result.error);
     });
 
+  const roomId = `room-${appealId}`;
+  const roomHint = rooms.length === 0 ? "Momentálne nie je voľné žiadne miesto." : undefined;
+  const pointsId = `points-${appealId}`;
+  const pointsHint = "Nepovinné. Napríklad 5 alebo -2,5. Pôvodný výpočet sa nemení.";
+  const noteId = `note-${appealId}`;
+
   return (
-    <div className="flex flex-col gap-4 rounded-panel bg-paper p-4">
-      <p className="font-semibold">Rozhodnutie komisie</p>
-      <div role="radiogroup" aria-label="Rozhodnutie" className="grid grid-cols-2 gap-2">
-        {[
-          { value: true, label: "Vyhovieť" },
-          { value: false, label: "Zamietnuť" },
-        ].map((option) => (
-          <button
-            key={option.label}
-            type="button"
-            role="radio"
-            aria-checked={upheld === option.value}
-            onClick={() => setUpheld(option.value)}
-            className={clsx(
-              "rounded-field px-3 py-2 text-sm font-semibold ring-1 transition-colors",
-              upheld === option.value
-                ? option.value
-                  ? "bg-ok text-white ring-ok"
-                  : "bg-bad text-white ring-bad"
-                : "bg-surface ring-line-strong hover:bg-sunken",
-            )}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
+    <div className="flex flex-col gap-5 rounded-panel border border-line bg-paper p-4">
+      <Fieldset legend="Rozhodnutie komisie">
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { value: true, label: "Vyhovieť" },
+            { value: false, label: "Zamietnuť" },
+          ].map((option) => (
+            <ChoiceCard
+              key={option.label}
+              name={`decision-${appealId}`}
+              value={option.value ? "vyhoviet" : "zamietnut"}
+              label={option.label}
+              checked={upheld === option.value}
+              onChange={() => setUpheld(option.value)}
+              className="py-2.5"
+            />
+          ))}
+        </div>
+      </Fieldset>
 
       {upheld ? (
         <>
-          <Field
-            label={hasPlace ? "Presunúť na iné miesto" : "Prideliť miesto"}
-            htmlFor={`room-${appealId}`}
-            hint={rooms.length === 0 ? "Momentálne nie je voľné žiadne miesto." : undefined}
-          >
+          <Field label={hasPlace ? "Presunúť na iné miesto" : "Prideliť miesto"} htmlFor={roomId} hint={roomHint}>
             <Select
-              id={`room-${appealId}`}
+              id={roomId}
               value={roomTypeId}
               onChange={(e) => setRoomTypeId(e.target.value)}
               disabled={rooms.length === 0}
+              aria-describedby={describedBy(roomId, { hint: roomHint })}
             >
               <option value="">{hasPlace ? "Ponechať súčasné miesto" : "Bez pridelenia miesta"}</option>
               {rooms.map((room) => (
@@ -91,16 +87,13 @@ export function AppealDecision({
               ))}
             </Select>
           </Field>
-          <Field
-            label="Úprava bodov"
-            htmlFor={`points-${appealId}`}
-            hint="Nepovinné. Napríklad 5 alebo -2,5. Pôvodný výpočet sa nemení."
-          >
+          <Field label="Úprava bodov" htmlFor={pointsId} hint={pointsHint}>
             <Input
-              id={`points-${appealId}`}
+              id={pointsId}
               inputMode="decimal"
               value={adjustment}
               onChange={(e) => setAdjustment(e.target.value)}
+              aria-describedby={describedBy(pointsId, { hint: pointsHint })}
               className="w-28"
             />
           </Field>
@@ -109,13 +102,13 @@ export function AppealDecision({
 
       {upheld !== null ? (
         <>
-          <Field label="Odôvodnenie pre študenta" htmlFor={`note-${appealId}`}>
-            <Textarea id={`note-${appealId}`} rows={3} value={note} onChange={(e) => setNote(e.target.value)} />
+          <Field label="Odôvodnenie pre študenta" htmlFor={noteId}>
+            <Textarea id={noteId} rows={3} value={note} onChange={(e) => setNote(e.target.value)} />
           </Field>
           {error ? (
-            <p role="alert" className="text-sm text-bad">
+            <Alert tone="bad" role="alert">
               {error}
-            </p>
+            </Alert>
           ) : null}
           <Button onClick={submit} disabled={pending} variant={upheld ? "primary" : "danger"}>
             {pending ? "Ukladám…" : upheld ? "Vyhovieť odvolaniu" : "Zamietnuť odvolanie"}

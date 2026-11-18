@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { startApplication } from "./actions";
 
@@ -11,7 +12,7 @@ export function StartApplicationButton() {
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div className="mt-10">
+    <div className="mt-6 flex flex-col items-start gap-4 border-t border-line pt-5">
       <Button
         size="lg"
         disabled={pending}
@@ -26,9 +27,9 @@ export function StartApplicationButton() {
         {pending ? "Načítavam údaje z AIS…" : "Začať vypĺňať žiadosť"}
       </Button>
       {error ? (
-        <p role="alert" className="mt-3 text-sm text-bad">
+        <Alert tone="bad" role="alert" className="w-full">
           {error}
-        </p>
+        </Alert>
       ) : null}
     </div>
   );

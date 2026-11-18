@@ -32,7 +32,7 @@ export function assertTransition(from: ApplicationStatus, to: ApplicationStatus)
   }
 }
 
-export type Tone = "neutral" | "info" | "wait" | "ok" | "bad" | "brass";
+export type Tone = "neutral" | "info" | "wait" | "ok" | "bad";
 
 export const STATUS: Record<
   ApplicationStatus,

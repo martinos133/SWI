@@ -1,15 +1,14 @@
 "use client";
 
-import clsx from "clsx";
 import { useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/field";
+import { Alert } from "@/components/ui/alert";
+import { ChoiceCard, describedBy, Field, Fieldset, Radio, Select, Textarea } from "@/components/ui/field";
 import type { ApplicationStatus, DocumentStatus, DocumentType } from "@/generated/prisma/enums";
 import { formatDateTime, formatFileSize } from "@/lib/format";
 import { DOCUMENT_STATUS } from "@/lib/status";
 import { assignFreePlace, finishReview, reviewDocument, startReview, type ActionResult } from "../../actions";
-import { Select } from "@/components/ui/field";
 
 type Doc = {
   id: string;
@@ -71,10 +70,13 @@ export function DocumentReview({
       } else setError(result.error);
     });
 
+  const noteId = doc ? `note-${doc.id}` : "";
+  const noteHint = "Študentovi to pošleme e-mailom a uvidí to aj v aplikácii.";
+
   return (
-    <article className="rounded-panel bg-surface ring-1 ring-line">
-      <header className="flex items-center justify-between gap-3 px-5 pt-4 sm:px-6">
-        <h3 className="font-bold">{label}</h3>
+    <article className="px-5 py-5">
+      <header className="flex items-center justify-between gap-3">
+        <h3 className="text-[0.9375rem] leading-6 font-semibold">{label}</h3>
         {doc ? (
           <Badge tone={DOCUMENT_STATUS[doc.status].tone}>{DOCUMENT_STATUS[doc.status].label}</Badge>
         ) : (
@@ -82,24 +84,27 @@ export function DocumentReview({
         )}
       </header>
 
-      <div className="flex flex-col gap-4 px-5 pt-3 pb-5 sm:px-6">
+      <div className="mt-3 flex flex-col gap-4">
         {doc ? (
           <a
             href={`/doklad/${doc.id}`}
             target="_blank"
             rel="noopener"
-            className="group flex items-center gap-3 rounded-field bg-paper px-3.5 py-3 transition-colors hover:bg-sunken"
+            className="group flex items-center gap-3 rounded-field border border-line bg-surface px-3 py-2.5 transition-colors hover:border-line-hover hover:bg-hover"
           >
-            <span aria-hidden className="grid h-10 w-8 place-items-center rounded-[0.35rem] bg-surface text-[0.625rem] font-bold text-muted ring-1 ring-line">
+            <span
+              aria-hidden
+              className="grid h-9 w-8 shrink-0 place-items-center rounded-field border border-line bg-sunken font-mono text-[0.625rem] font-semibold text-ink-soft"
+            >
               {doc.fileName.split(".").pop()?.toUpperCase().slice(0, 4)}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-medium group-hover:underline">{doc.fileName}</span>
+              <span className="block truncate font-medium text-ink group-hover:underline">{doc.fileName}</span>
               <span className="block text-sm text-muted">
                 {formatFileSize(doc.size)}, nahrané {formatDateTime(doc.uploadedAt)}
               </span>
             </span>
-            <span className="shrink-0 text-sm font-medium text-muted">Otvoriť</span>
+            <span className="shrink-0 text-sm font-semibold text-pine">Otvoriť</span>
           </a>
         ) : (
           <p className="text-sm text-muted">Študent doklad ešte nenahral.</p>
@@ -113,78 +118,62 @@ export function DocumentReview({
         ) : null}
 
         {doc && reviewable && !open ? (
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="self-start text-sm font-medium text-muted underline underline-offset-2 hover:text-ink"
-          >
+          <Button variant="link" size="sm" className="self-start" onClick={() => setOpen(true)}>
             Zmeniť posúdenie
-          </button>
+          </Button>
         ) : null}
 
         {doc && reviewable && open ? (
-          <div className="flex flex-col gap-4 border-t border-line pt-4">
-            <div role="radiogroup" aria-label="Rozhodnutie" className="flex flex-wrap gap-2">
-              {DECISIONS.map((d) => (
-                <button
-                  key={d.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={decision === d.value}
-                  onClick={() => setDecision(d.value)}
-                  className={clsx(
-                    "rounded-full px-3.5 py-1.5 text-sm font-semibold ring-1 transition-colors",
-                    decision === d.value
-                      ? d.value === "OVERENY"
-                        ? "bg-ok text-white ring-ok"
-                        : d.value === "DOPLNIT"
-                          ? "bg-wait text-white ring-wait"
-                          : "bg-bad text-white ring-bad"
-                      : "bg-surface text-ink-soft ring-line-strong hover:bg-sunken",
-                  )}
-                >
-                  {d.label}
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-col gap-5 border-t border-line pt-4">
+            <Fieldset legend="Rozhodnutie">
+              <div className="flex flex-wrap gap-2">
+                {DECISIONS.map((d) => (
+                  <label key={d.value} className="choice items-center py-2 pr-3.5 pl-3 text-[0.9375rem] font-medium">
+                    <Radio
+                      name={`decision-${doc.id}`}
+                      value={d.value}
+                      className="mt-0"
+                      checked={decision === d.value}
+                      onChange={() => setDecision(d.value)}
+                    />
+                    {d.label}
+                  </label>
+                ))}
+              </div>
+            </Fieldset>
 
             {decision === "OVERENY" && type === "PRIJEM" ? (
-              <fieldset>
-                <legend className="text-sm font-semibold">Stupeň sociálnej situácie</legend>
-                <p className="text-sm text-muted">Určuje body za kritérium sociálnej situácie.</p>
-                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <Fieldset
+                legend="Stupeň sociálnej situácie"
+                hint="Určuje body za kritérium sociálnej situácie."
+                id={`level-${doc.id}`}
+              >
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {SOCIAL.map((s) => (
-                    <label
+                    <ChoiceCard
                       key={s.value}
-                      className={clsx(
-                        "cursor-pointer rounded-field px-3 py-2.5 ring-1 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-brass",
-                        level === s.value ? "bg-pine-tint ring-2 ring-pine" : "ring-line-strong hover:bg-sunken",
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name={`level-${doc.id}`}
-                        className="sr-only"
-                        checked={level === s.value}
-                        onChange={() => setLevel(s.value)}
-                      />
-                      <span className="block text-lg font-bold">{s.label}</span>
-                      <span className="block text-sm text-muted">{s.text}</span>
-                    </label>
+                      name={`level-${doc.id}`}
+                      label={s.label}
+                      description={s.text}
+                      checked={level === s.value}
+                      onChange={() => setLevel(s.value)}
+                    />
                   ))}
                 </div>
-              </fieldset>
+              </Fieldset>
             ) : null}
 
             {decision !== "OVERENY" ? (
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor={`note-${doc.id}`} className="text-sm font-semibold">
-                  {decision === "DOPLNIT" ? "Čo má študent doplniť" : "Dôvod zamietnutia"}
-                </label>
+              <Field
+                label={decision === "DOPLNIT" ? "Čo má študent doplniť" : "Dôvod zamietnutia"}
+                htmlFor={noteId}
+                hint={noteHint}
+              >
                 <Textarea
-                  id={`note-${doc.id}`}
+                  id={noteId}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
+                  aria-describedby={describedBy(noteId, { hint: noteHint })}
                   placeholder={
                     decision === "DOPLNIT"
                       ? "Napríklad: Na potvrdení chýba pečiatka zamestnávateľa."
@@ -192,17 +181,16 @@ export function DocumentReview({
                   }
                   rows={3}
                 />
-                <p className="text-sm text-muted">Študentovi to pošleme e-mailom a uvidí to aj v aplikácii.</p>
-              </div>
+              </Field>
             ) : null}
 
             {error ? (
-              <p role="alert" className="text-sm text-bad">
+              <Alert tone="bad" role="alert">
                 {error}
-              </p>
+              </Alert>
             ) : null}
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 onClick={submit}
                 disabled={pending}
@@ -239,12 +227,17 @@ export function ApplicationActions({
   if (status === "NEPRIDELENA") {
     if (freeRooms.length === 0) return null;
     return (
-      <div className="flex flex-col items-start gap-2 sm:items-end">
-        <div className="flex flex-wrap gap-2">
+      <div className="flex w-full flex-col items-start gap-2 sm:w-auto sm:items-end">
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
           <label htmlFor="free-room" className="sr-only">
             Uvoľnené miesto
           </label>
-          <Select id="free-room" value={room} onChange={(e) => setRoom(e.target.value)} className="w-64">
+          <Select
+            id="free-room"
+            value={room}
+            onChange={(e) => setRoom(e.target.value)}
+            className="w-full sm:w-64"
+          >
             <option value="">Vyberte uvoľnené miesto</option>
             {freeRooms.map((r) => (
               <option key={r.id} value={r.id}>
@@ -265,9 +258,9 @@ export function ApplicationActions({
           </Button>
         </div>
         {error ? (
-          <p role="alert" className="max-w-xs text-sm text-bad sm:text-right">
+          <Alert tone="bad" role="alert" className="max-w-sm">
             {error}
-          </p>
+          </Alert>
         ) : null}
       </div>
     );
@@ -293,9 +286,9 @@ export function ApplicationActions({
         </Button>
       )}
       {error ? (
-        <p role="alert" className="max-w-xs text-sm text-bad sm:text-right">
+        <Alert tone="bad" role="alert" className="max-w-sm">
           {error}
-        </p>
+        </Alert>
       ) : null}
     </div>
   );

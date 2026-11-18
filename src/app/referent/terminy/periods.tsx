@@ -1,9 +1,11 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
+import { Section } from "@/components/ui/page-header";
 import { activatePeriod, createPeriod, type DeadlinesState } from "./actions";
 
 type PeriodRow = {
@@ -36,28 +38,23 @@ export function Periods({ periods, defaults }: { periods: PeriodRow[]; defaults:
   const [switchError, setSwitchError] = useState<string | null>(null);
 
   return (
-    <section aria-labelledby="konania" className="mt-14 max-w-2xl">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h2 id="konania" className="text-lg font-bold">
-            Konania
-          </h2>
-          <p className="mt-0.5 text-sm text-muted">
-            Študenti a celé ubytovacie oddelenie pracujú s aktívnym konaním.
-          </p>
-        </div>
-        {!open ? (
-          <Button variant="secondary" onClick={() => setOpen(true)}>
+    <Section
+      title="Konania"
+      description="Študenti a celé ubytovacie oddelenie pracujú s aktívnym konaním."
+      actions={
+        !open ? (
+          <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
             Založiť nové konanie
           </Button>
-        ) : null}
-      </div>
-
-      <ul className="mt-4 divide-y divide-line rounded-panel bg-surface ring-1 ring-line">
+        ) : undefined
+      }
+      flush
+    >
+      <ul className="divide-y divide-line">
         {periods.map((p) => (
-          <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 sm:px-6">
-            <div>
-              <p className="font-semibold">Akademický rok {p.academicYear}</p>
+          <li key={p.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
+            <div className="min-w-0">
+              <p className="font-semibold text-ink">Akademický rok {p.academicYear}</p>
               <p className="text-sm text-muted">
                 {p.range}, {p.applications} {p.applications === 1 ? "žiadosť" : p.applications >= 2 && p.applications <= 4 ? "žiadosti" : "žiadostí"}
               </p>
@@ -66,7 +63,7 @@ export function Periods({ periods, defaults }: { periods: PeriodRow[]; defaults:
               <Badge tone="ok">Aktívne</Badge>
             ) : (
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 disabled={switching}
                 onClick={() =>
@@ -83,19 +80,21 @@ export function Periods({ periods, defaults }: { periods: PeriodRow[]; defaults:
         ))}
       </ul>
       {switchError ? (
-        <p role="alert" className="mt-2 text-sm text-bad">
-          {switchError}
-        </p>
+        <div className="border-t border-line px-5 py-4">
+          <Alert tone="bad" role="alert">
+            {switchError}
+          </Alert>
+        </div>
       ) : null}
 
       {open ? (
-        <form action={action} className="mt-6 rounded-panel bg-surface p-5 ring-1 ring-line sm:p-6">
-          <h3 className="font-bold">Nové konanie</h3>
-          <p className="mt-1 text-sm text-muted">
+        <form action={action} className="border-t border-line px-5 py-5">
+          <h3 className="text-[0.9375rem] leading-6 font-semibold">Nové konanie</h3>
+          <p className="mt-0.5 text-sm text-muted">
             Kritériá a váhy prevezmeme z aktuálneho konania. Pred výpočtom poradia ich musí ubytovacia
             komisia znova schváliť.
           </p>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
             <Field label="Akademický rok" htmlFor="academicYear" className="sm:col-span-2 sm:max-w-48">
               <Input id="academicYear" name="academicYear" defaultValue={defaults.academicYear} required />
             </Field>
@@ -112,21 +111,21 @@ export function Periods({ periods, defaults }: { periods: PeriodRow[]; defaults:
               <Input id="new-appealTo" name="appealTo" type="date" defaultValue={defaults.appealTo} required />
             </Field>
           </div>
-          <div className="mt-5 flex flex-wrap items-center gap-3">
+          {state?.error ? (
+            <Alert tone="bad" role="alert" className="mt-5">
+              {state.error}
+            </Alert>
+          ) : null}
+          <div className="mt-5 flex flex-wrap items-center gap-2">
             <Button type="submit" disabled={pending}>
               {pending ? "Zakladám…" : "Založiť a aktivovať"}
             </Button>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               Zrušiť
             </Button>
-            {state?.error ? (
-              <p role="alert" className="text-sm text-bad">
-                {state.error}
-              </p>
-            ) : null}
           </div>
         </form>
       ) : null}
-    </section>
+    </Section>
   );
 }

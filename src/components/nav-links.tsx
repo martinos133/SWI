@@ -20,7 +20,7 @@ export function NavLinks({ items }: { items: NavItem[] }) {
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={clsx(
-              "relative shrink-0 px-3 py-3.5 text-[0.9375rem] font-medium whitespace-nowrap transition-colors",
+              "relative shrink-0 px-3 py-4 text-sm font-medium whitespace-nowrap transition-colors",
               active ? "text-ink" : "text-muted hover:text-ink",
             )}
           >
@@ -28,7 +28,7 @@ export function NavLinks({ items }: { items: NavItem[] }) {
             <span
               aria-hidden
               className={clsx(
-                "absolute inset-x-3 bottom-0 h-0.5 rounded-full transition-colors",
+                "absolute inset-x-3 bottom-0 h-0.5 transition-colors",
                 active ? "bg-pine" : "bg-transparent",
               )}
             />

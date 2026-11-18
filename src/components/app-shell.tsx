@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { signOut } from "@/app/login/actions";
 import type { CurrentUser } from "@/lib/auth";
 import { NAV, ROLE_HOME, ROLE_LABEL } from "@/lib/roles";
+import { buttonClass } from "./ui/button";
 import { Wordmark } from "./logo";
 import { NavLinks } from "./nav-links";
 
@@ -18,13 +19,13 @@ export function AppShell({ user, children }: { user: CurrentUser; children: Reac
     <div className="flex min-h-dvh flex-col">
       <a
         href="#obsah"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-field focus:bg-surface focus:px-3 focus:py-2"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-field focus:border focus:border-line-strong focus:bg-surface focus:px-3 focus:py-2 focus:font-semibold"
       >
         Preskočiť na obsah
       </a>
-      <header className="sticky top-0 z-30 border-b border-line bg-surface/90 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-line bg-surface">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 px-4 sm:px-6">
-          <Link href={ROLE_HOME[user.role]} className="py-3.5" aria-label="Ubytovanie – domov">
+          <Link href={ROLE_HOME[user.role]} className="py-3" aria-label="Ubytovanie – domov">
             <Wordmark />
           </Link>
 
@@ -39,7 +40,7 @@ export function AppShell({ user, children }: { user: CurrentUser; children: Reac
             </div>
             <span
               title={`${user.name}, ${ROLE_LABEL[user.role]}`}
-              className="grid size-9 place-items-center rounded-full bg-pine-tint text-sm font-bold text-pine"
+              className="grid size-8 place-items-center rounded-full bg-pine text-[0.8125rem] font-semibold text-white"
             >
               <span aria-hidden>{initials}</span>
               <span className="sr-only xl:hidden">
@@ -49,7 +50,7 @@ export function AppShell({ user, children }: { user: CurrentUser; children: Reac
             <form action={signOut}>
               <button
                 type="submit"
-                className="rounded-field px-2.5 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-sunken hover:text-ink"
+                className={buttonClass({ variant: "ghost", size: "sm" })}
               >
                 Odhlásiť
               </button>
@@ -58,7 +59,7 @@ export function AppShell({ user, children }: { user: CurrentUser; children: Reac
         </div>
       </header>
 
-      <main id="obsah" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-12">
+      <main id="obsah" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         {children}
       </main>
     </div>
